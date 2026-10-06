@@ -3,6 +3,7 @@
 **Assignment:** Gupio Campus Placement Development Assignment — Frontend Developer (Option 1: Task Management Dashboard)  
 **Project Name:** Gupio TaskHub  
 **Subtitle:** Task Management Dashboard  
+**Live Demo:** [https://gupio-taskhub.vercel.app](https://gupio-taskhub.vercel.app)  
 *Note: This frontend project was built specifically for the Gupio placement assignment.*
 
 ---
