@@ -15,8 +15,10 @@ import TasksPage from './pages/TasksPage';
 import KanbanBoardPage from './pages/KanbanBoardPage';
 import CalendarViewPage from './pages/CalendarViewPage';
 import AnalyticsPage from './pages/AnalyticsPage';
+import HealthPage from './pages/HealthPage';
 import ProfilePage from './pages/ProfilePage';
 import SettingsPage from './pages/SettingsPage';
+import { useHealthReminders } from './hooks/useHealthReminders';
 
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
@@ -43,6 +45,16 @@ function WorkspaceShell() {
     resetTasks,
     clearAllTasks,
   } = useTasks(currentUser?.id);
+
+  const {
+    reminders: healthReminders,
+    nextReminder: nextHealthReminder,
+    createReminder: createHealthReminder,
+    updateReminder: updateHealthReminder,
+    deleteReminder: deleteHealthReminder,
+    toggleReminder: toggleHealthReminder,
+    resetSampleReminders: resetHealthReminders,
+  } = useHealthReminders(currentUser?.id);
 
   const { toasts, showToast, removeToast } = useToast();
 
@@ -216,6 +228,11 @@ function WorkspaceShell() {
           title: 'Workspace Settings',
           subtitle: 'Customize appearance, notification alerts, and data exports.',
         };
+      case '/health':
+        return {
+          title: 'Health Reminders',
+          subtitle: 'Keep your daily reminders organized.',
+        };
       case '/dashboard':
       case '/':
       default:
@@ -280,26 +297,12 @@ function WorkspaceShell() {
             <DashboardPage
               tasks={tasks}
               stats={stats}
-              filteredTasks={filteredTasks}
-              searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
-              statusFilter={statusFilter}
-              onStatusFilterChange={setStatusFilter}
-              priorityFilter={priorityFilter}
-              onPriorityFilterChange={setPriorityFilter}
-              sortBy={sortBy}
-              onSortChange={setSortBy}
-              viewMode={viewMode}
-              onViewModeChange={setViewMode}
-              onResetFilters={handleResetFilters}
-              isFiltered={isFiltered}
               onViewTask={(task) => setTaskToView(task)}
-              onEditTask={handleOpenEditModal}
-              onDeleteTask={(task) => setTaskToDelete(task)}
               onStatusChange={handleStatusChange}
               onCreateTask={() => handleOpenCreateModal('Todo')}
-              onResetTasks={() => setIsResetConfirmOpen(true)}
               onNavigate={navigate}
+              nextHealthReminder={nextHealthReminder}
+              onToggleHealthReminder={toggleHealthReminder}
             />
           )}
 
@@ -349,6 +352,18 @@ function WorkspaceShell() {
 
           {currentPath === '/analytics' && (
             <AnalyticsPage tasks={tasks} stats={stats} />
+          )}
+
+          {currentPath === '/health' && (
+            <HealthPage
+              reminders={healthReminders}
+              onCreateReminder={createHealthReminder}
+              onUpdateReminder={updateHealthReminder}
+              onDeleteReminder={deleteHealthReminder}
+              onToggleReminder={toggleHealthReminder}
+              onResetReminders={resetHealthReminders}
+              onShowToast={showToast}
+            />
           )}
 
           {currentPath === '/profile' && (

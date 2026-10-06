@@ -110,8 +110,8 @@ export default function SignupPage() {
             <Sparkles size={24} className="text-brand-accent" />
           </div>
           <div>
-            <h1 className="auth-brand-name">Gupio TaskHub</h1>
-            <p className="auth-brand-subtitle">Task Management Dashboard</p>
+            <h1 className="auth-brand-name">TaskHub</h1>
+            <p className="auth-brand-subtitle">Plan. Prioritize. Get Things Done.</p>
           </div>
         </div>
 
@@ -159,7 +159,7 @@ export default function SignupPage() {
         <div className="auth-card">
           <div className="auth-card-header">
             <h2 className="auth-title">Create your account</h2>
-            <p className="auth-subtitle">Get started with Gupio TaskHub in seconds</p>
+            <p className="auth-subtitle">Get started with TaskHub in seconds</p>
           </div>
 
           {generalError && (

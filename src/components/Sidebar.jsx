@@ -5,6 +5,7 @@ import {
   Columns3,
   CalendarDays,
   BarChart3,
+  HeartPulse,
   User,
   Settings,
   X,
@@ -57,6 +58,11 @@ export default function Sidebar({
 
   const secondaryNavItems = [
     {
+      path: '/health',
+      label: 'Health',
+      icon: HeartPulse,
+    },
+    {
       path: '/profile',
       label: 'Profile',
       icon: User,
@@ -88,11 +94,11 @@ export default function Sidebar({
         {/* Brand Header */}
         <div className="sidebar-brand-wrapper">
           <div className="brand-logo-icon">
-            <Sparkles size={22} className="text-brand-accent" />
+            <Sparkles size={20} className="text-brand-accent" />
           </div>
           <div className="brand-text-block">
-            <h1 className="brand-title">Gupio TaskHub</h1>
-            <p className="brand-subtitle">Productivity Workspace</p>
+            <h1 className="brand-title">TaskHub</h1>
+            <p className="brand-subtitle">Plan. Prioritize. Get Things Done.</p>
           </div>
           <button
             type="button"

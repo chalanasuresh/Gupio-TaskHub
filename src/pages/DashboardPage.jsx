@@ -1,52 +1,37 @@
 import React, { useMemo } from 'react';
 import {
   Layers,
-  CircleDot,
   Clock,
   CheckCircle2,
-  Flame,
-  AlertCircle,
   Calendar,
   Sparkles,
   ArrowRight,
   Plus,
   TrendingUp,
+  Circle,
+  Check,
+  Flame,
 } from 'lucide-react';
 import StatCard from '../components/StatCard';
-import SearchFilterBar from '../components/SearchFilterBar';
-import TaskList from '../components/TaskList';
 import { useAuth } from '../context/AuthContext';
 import {
   getTodayFocusTasks,
   getUpcomingDeadlines,
-  getOverdueTasks,
   getRecentlyCompletedTasks,
   formatDisplayDate,
+  isTaskOverdue,
+  isTaskDueToday,
 } from '../utils/taskUtils';
 
 export default function DashboardPage({
-  tasks,
+  tasks = [],
   stats,
-  filteredTasks,
-  searchQuery,
-  onSearchChange,
-  statusFilter,
-  onStatusFilterChange,
-  priorityFilter,
-  onPriorityFilterChange,
-  sortBy,
-  onSortChange,
-  viewMode,
-  onViewModeChange,
-  onResetFilters,
-  isFiltered,
   onViewTask,
-  onEditTask,
-  onDeleteTask,
   onStatusChange,
   onCreateTask,
-  onResetTasks,
   onNavigate,
+  nextHealthReminder,
+  onToggleHealthReminder,
 }) {
   const { currentUser } = useAuth();
   const userName = currentUser?.name ? currentUser.name.split(' ')[0] : 'there';
@@ -62,14 +47,25 @@ export default function DashboardPage({
     return { greeting: greet, todayFormatted: dateStr };
   }, []);
 
-  const todayFocus = getTodayFocusTasks(tasks);
-  const upcomingDeadlines = getUpcomingDeadlines(tasks, 7);
-  const overdueTasks = getOverdueTasks(tasks);
-  const recentlyCompleted = getRecentlyCompletedTasks(tasks, 3);
+  const todayDueCount = useMemo(() => {
+    return tasks.filter((t) => isTaskDueToday(t.dueDate, t.status)).length;
+  }, [tasks]);
+
+  const todayFocus = useMemo(() => {
+    return getTodayFocusTasks(tasks).slice(0, 5);
+  }, [tasks]);
+
+  const upcomingTasks = useMemo(() => {
+    return getUpcomingDeadlines(tasks, 7).slice(0, 4);
+  }, [tasks]);
+
+  const recentlyCompleted = useMemo(() => {
+    return getRecentlyCompletedTasks(tasks, 4);
+  }, [tasks]);
 
   return (
     <div className="dashboard-page-container">
-      {/* 1. Compact Dashboard Hero Section */}
+      {/* 1. Header Hero Welcome */}
       <section className="dashboard-hero-section" aria-label="Welcome banner">
         <div className="hero-welcome-left">
           <div className="hero-title-row">
@@ -82,7 +78,7 @@ export default function DashboardPage({
             </div>
           </div>
           <p className="hero-greeting-subtitle">
-            Here's what's happening with your tasks today.
+            Here's your productivity overview for today.
           </p>
         </div>
 
@@ -98,39 +94,15 @@ export default function DashboardPage({
         </div>
       </section>
 
-      {/* 2. 5-Column Statistics Cards Row */}
-      <section className="stats-cards-grid" aria-label="Task metrics">
+      {/* 2. Compact Statistics (4 Cards) */}
+      <section className="dashboard-stats-row" aria-label="Task metrics">
         <StatCard
           label="Total Tasks"
           value={stats.total}
           icon={Layers}
           variant="default"
           subtext="Overall backlog"
-          isActive={statusFilter === 'All' && priorityFilter === 'All'}
-          onClick={() => {
-            onStatusFilterChange('All');
-            onPriorityFilterChange('All');
-          }}
-        />
-        <StatCard
-          label="Todo"
-          value={stats.todo}
-          icon={CircleDot}
-          variant="todo"
-          subtext="Pending start"
-          isActive={statusFilter === 'Todo'}
-          onClick={() => onStatusFilterChange(statusFilter === 'Todo' ? 'All' : 'Todo')}
-        />
-        <StatCard
-          label="In Progress"
-          value={stats.inProgress}
-          icon={Clock}
-          variant="progress"
-          subtext="Active sprints"
-          isActive={statusFilter === 'In Progress'}
-          onClick={() =>
-            onStatusFilterChange(statusFilter === 'In Progress' ? 'All' : 'In Progress')
-          }
+          onClick={() => onNavigate('/tasks')}
         />
         <StatCard
           label="Completed"
@@ -138,241 +110,288 @@ export default function DashboardPage({
           icon={CheckCircle2}
           variant="completed"
           subtext={`${stats.completionRate}% completion rate`}
-          isActive={statusFilter === 'Completed'}
-          onClick={() =>
-            onStatusFilterChange(statusFilter === 'Completed' ? 'All' : 'Completed')
-          }
+          onClick={() => onNavigate('/tasks')}
         />
         <StatCard
-          label="High Priority"
-          value={stats.highPriority}
+          label="In Progress"
+          value={stats.inProgress}
+          icon={Clock}
+          variant="progress"
+          subtext="Active deliverables"
+          onClick={() => onNavigate('/tasks')}
+        />
+        <StatCard
+          label="Due Today"
+          value={todayDueCount}
           icon={Flame}
           variant="high"
-          subtext="Urgent action items"
-          isActive={priorityFilter === 'High'}
-          onClick={() =>
-            onPriorityFilterChange(priorityFilter === 'High' ? 'All' : 'High')
-          }
+          subtext="Requires daily focus"
+          onClick={() => onNavigate('/tasks')}
         />
       </section>
 
-      {/* 3. Main Dashboard Insights Grid */}
-      <div className="dashboard-insights-grid" aria-label="Smart workflow insights">
-        {/* Left Column: Upcoming Deadlines & Overdue */}
-        <div className="insights-col-left">
-          {/* Upcoming Deadlines Widget */}
-          <div className="smart-widget-card">
-            <div className="widget-header">
-              <div className="widget-title-group">
-                <Calendar size={15} className="text-primary" />
-                <h3 className="widget-title">Upcoming Deadlines</h3>
-                <span className="widget-badge">{upcomingDeadlines.length}</span>
-              </div>
-              <button
-                type="button"
-                className="widget-action-link"
-                onClick={() => onNavigate('/calendar')}
-              >
-                Calendar <ArrowRight size={12} />
-              </button>
-            </div>
-
-            <div className="widget-body">
-              {upcomingDeadlines.length === 0 ? (
-                <p className="widget-empty-msg">No deadlines scheduled in next 7 days.</p>
-              ) : (
-                <div className="widget-task-mini-list">
-                  {upcomingDeadlines.slice(0, 3).map((t) => (
-                    <div
-                      key={t.id}
-                      className="widget-task-mini-item"
-                      onClick={() => onViewTask(t)}
-                    >
-                      <span className={`priority-indicator-dot dot-${t.priority.toLowerCase()}`} />
-                      <span className="mini-task-title">{t.title}</span>
-                      <span className="mini-due-pill">{formatDisplayDate(t.dueDate)}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+      {/* 3. Today's Focus (Top 3-5 Priority Tasks) */}
+      <section className="dashboard-card today-focus-section">
+        <div className="dashboard-section-header">
+          <div className="section-title-group">
+            <Sparkles size={16} className="text-amber-500" />
+            <h3 className="dashboard-section-heading">Today's Focus</h3>
+            <span className="section-count-badge">{todayFocus.length}</span>
           </div>
+          <button
+            type="button"
+            className="section-link-btn"
+            onClick={() => onNavigate('/tasks')}
+          >
+            View in Tasks <ArrowRight size={13} />
+          </button>
+        </div>
 
-          {/* Overdue Attention (shown if any) */}
-          {overdueTasks.length > 0 && (
-            <div className="smart-widget-card border-danger-subtle">
-              <div className="widget-header">
-                <div className="widget-title-group">
-                  <AlertCircle size={15} className="text-danger" />
-                  <h3 className="widget-title text-danger">Overdue Attention</h3>
-                  <span className="widget-badge bg-rose-pill">{overdueTasks.length}</span>
-                </div>
-                <button
-                  type="button"
-                  className="widget-action-link text-danger"
-                  onClick={() => onStatusFilterChange('Overdue')}
-                >
-                  Filter Overdue
-                </button>
-              </div>
+        <div className="today-focus-content">
+          {todayFocus.length === 0 ? (
+            <div className="today-focus-empty">
+              <p>🎉 All priority tasks for today are clear! Check upcoming deadlines below.</p>
+            </div>
+          ) : (
+            <div className="today-tasks-list">
+              {todayFocus.map((task) => {
+                const isDone = task.status === 'Completed';
+                const isOverdue = isTaskOverdue(task.dueDate, task.status);
 
-              <div className="widget-body">
-                <div className="widget-task-mini-list">
-                  {overdueTasks.slice(0, 2).map((t) => (
-                    <div
-                      key={t.id}
-                      className="widget-task-mini-item text-danger"
-                      onClick={() => onViewTask(t)}
+                return (
+                  <div
+                    key={task.id}
+                    className={`today-task-row ${isDone ? 'is-completed' : ''}`}
+                    onClick={() => onViewTask(task)}
+                  >
+                    <button
+                      type="button"
+                      className="task-row-check-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onStatusChange(task.id, isDone ? 'Todo' : 'Completed');
+                      }}
+                      title={isDone ? 'Mark as Todo' : 'Mark Complete'}
+                      aria-label="Toggle complete"
                     >
-                      <span className="mini-task-title">{t.title}</span>
-                      <span className="text-rose-500 font-semibold">{formatDisplayDate(t.dueDate)}</span>
+                      {isDone ? (
+                        <CheckCircle2 size={18} className="text-emerald" />
+                      ) : (
+                        <Circle size={18} />
+                      )}
+                    </button>
+
+                    <div className="today-task-info">
+                      <div className="today-task-title-wrap">
+                        <span className={`priority-indicator-dot dot-${task.priority.toLowerCase()}`} />
+                        <span className={`today-task-title ${isDone ? 'strikethrough' : ''}`}>
+                          {task.title}
+                        </span>
+                      </div>
+                      {task.description && (
+                        <p className="today-task-desc-snippet">{task.description}</p>
+                      )}
                     </div>
-                  ))}
-                </div>
-              </div>
+
+                    <div className="today-task-meta">
+                      <span className={`today-due-badge ${isOverdue ? 'overdue' : ''}`}>
+                        {formatDisplayDate(task.dueDate)}
+                      </span>
+                      <span className={`badge badge-priority badge-priority-${task.priority.toLowerCase()}`}>
+                        {task.priority}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
+      </section>
 
-        {/* Right Column: Today's Focus & Productivity Summary */}
-        <div className="insights-col-right">
-          {/* Today's Focus Card */}
-          <div className="smart-widget-card">
-            <div className="widget-header">
-              <div className="widget-title-group">
-                <Sparkles size={15} className="text-amber-500" />
-                <h3 className="widget-title">Today's Focus</h3>
-                <span className="widget-badge">{todayFocus.length}</span>
-              </div>
-              <button
-                type="button"
-                className="widget-action-link"
-                onClick={() => onStatusFilterChange('Due Today')}
-              >
-                Filter Due Today
-              </button>
+      {/* 4. Upcoming Deadlines & Productivity Overview (2-Column Grid) */}
+      <div className="dashboard-two-col-grid">
+        {/* Left: Upcoming Deadlines */}
+        <div className="dashboard-card upcoming-card">
+          <div className="dashboard-section-header">
+            <div className="section-title-group">
+              <Calendar size={16} className="text-primary" />
+              <h3 className="dashboard-section-heading">Upcoming Deadlines</h3>
+              <span className="section-count-badge">{upcomingTasks.length}</span>
             </div>
-
-            <div className="widget-body">
-              {todayFocus.length === 0 ? (
-                <p className="widget-empty-msg">No urgent tasks due today! Keep momentum going.</p>
-              ) : (
-                <div className="widget-task-mini-list">
-                  {todayFocus.slice(0, 3).map((t) => (
-                    <div
-                      key={t.id}
-                      className="widget-task-mini-item"
-                      onClick={() => onViewTask(t)}
-                    >
-                      <span className={`priority-indicator-dot dot-${t.priority.toLowerCase()}`} />
-                      <span className="mini-task-title">{t.title}</span>
-                      <span className="mini-task-date">{formatDisplayDate(t.dueDate)}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            <button
+              type="button"
+              className="section-link-btn"
+              onClick={() => onNavigate('/calendar')}
+            >
+              Calendar <ArrowRight size={13} />
+            </button>
           </div>
 
-          {/* Productivity Velocity Mini Card */}
-          <div className="smart-widget-card">
-            <div className="widget-header">
-              <div className="widget-title-group">
-                <TrendingUp size={15} className="text-emerald" />
-                <h3 className="widget-title">Productivity Velocity</h3>
+          <div className="upcoming-content">
+            {upcomingTasks.length === 0 ? (
+              <p className="dashboard-empty-text">No upcoming deadlines in the next 7 days.</p>
+            ) : (
+              <div className="upcoming-tasks-mini-list">
+                {upcomingTasks.map((t) => (
+                  <div
+                    key={t.id}
+                    className="upcoming-mini-item"
+                    onClick={() => onViewTask(t)}
+                  >
+                    <span className={`priority-indicator-dot dot-${t.priority.toLowerCase()}`} />
+                    <span className="upcoming-mini-title">{t.title}</span>
+                    <span className="upcoming-date-pill">{formatDisplayDate(t.dueDate)}</span>
+                  </div>
+                ))}
               </div>
-              <button
-                type="button"
-                className="widget-action-link"
-                onClick={() => onNavigate('/analytics')}
-              >
-                Analytics <ArrowRight size={12} />
-              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Right: Productivity Overview */}
+        <div className="dashboard-card productivity-card">
+          <div className="dashboard-section-header">
+            <div className="section-title-group">
+              <TrendingUp size={16} className="text-emerald" />
+              <h3 className="dashboard-section-heading">Productivity Overview</h3>
+            </div>
+            <button
+              type="button"
+              className="section-link-btn"
+              onClick={() => onNavigate('/analytics')}
+            >
+              Full Analytics <ArrowRight size={13} />
+            </button>
+          </div>
+
+          <div className="productivity-content">
+            <div className="prod-progress-block">
+              <div className="prod-progress-labels">
+                <span className="prod-progress-sub">Backlog Completion Ratio</span>
+                <span className="prod-progress-pct text-emerald">{stats.completionRate}%</span>
+              </div>
+              <div className="mini-progress-bar-wrap">
+                <div
+                  className="mini-progress-bar-fill"
+                  style={{ width: `${Math.min(stats.completionRate, 100)}%` }}
+                />
+              </div>
             </div>
 
-            <div className="widget-body">
-              <div className="mini-progress-summary">
-                <div className="mini-progress-bar-wrap">
-                  <div
-                    className="mini-progress-bar-fill"
-                    style={{ width: `${Math.min(stats.completionRate, 100)}%` }}
-                  />
-                </div>
-                <div className="mini-progress-labels">
-                  <span className="text-secondary">{stats.completed} of {stats.total} tasks completed</span>
-                  <span className="font-semibold text-emerald">{stats.completionRate}%</span>
-                </div>
+            <div className="prod-stats-mini-row">
+              <div className="prod-mini-stat">
+                <span className="prod-mini-val text-emerald">{stats.completed}</span>
+                <span className="prod-mini-lbl">Completed</span>
               </div>
-
-              {recentlyCompleted.length > 0 && (
-                <div className="recently-completed-snippet">
-                  <span className="snippet-label">Latest done:</span>
-                  <span className="snippet-title strikethrough">
-                    {recentlyCompleted[0].title}
-                  </span>
-                </div>
-              )}
+              <div className="prod-mini-stat">
+                <span className="prod-mini-val text-primary">{stats.inProgress}</span>
+                <span className="prod-mini-lbl">In Progress</span>
+              </div>
+              <div className="prod-mini-stat">
+                <span className="prod-mini-val text-amber">{stats.todo}</span>
+                <span className="prod-mini-lbl">To Do</span>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* 4. Main Tasks Backlog Section */}
-      <section className="dashboard-tasks-section" aria-label="Task backlog and listing">
-        <div className="tasks-section-header">
-          <div>
-            <h3 className="tasks-section-title">Task Workspace</h3>
-            <p className="tasks-section-subtitle">
-              Filter, search, and manage your team priorities
-            </p>
+      {/* 5. Small Health Reminder & Recent Activity (2-Column Grid) */}
+      <div className="dashboard-two-col-grid">
+        {/* Left: Small Health Reminder Widget */}
+        <div className="dashboard-card health-widget-card">
+          <div className="dashboard-section-header">
+            <div className="section-title-group">
+              <span style={{ fontSize: '16px' }}>💊</span>
+              <h3 className="dashboard-section-heading">Health Reminder</h3>
+            </div>
+            <button
+              type="button"
+              className="section-link-btn text-teal"
+              onClick={() => onNavigate('/health')}
+            >
+              View Health <ArrowRight size={13} />
+            </button>
           </div>
-          <button
-            type="button"
-            className="btn btn-secondary btn-sm"
-            onClick={() => onNavigate('/tasks')}
-          >
-            Full Task View <ArrowRight size={13} />
-          </button>
+
+          <div className="health-widget-body">
+            {nextHealthReminder ? (
+              <div className="health-widget-item">
+                <div className="health-widget-text">
+                  <span className="health-widget-sublabel">Next reminder</span>
+                  <strong className="health-widget-name">{nextHealthReminder.name}</strong>
+                  <span className="health-widget-timing">
+                    Today · {nextHealthReminder.time}
+                  </span>
+                </div>
+
+                <div className="health-widget-actions">
+                  <button
+                    type="button"
+                    className={`btn btn-sm ${
+                      nextHealthReminder.completed ? 'btn-secondary text-emerald' : 'btn-teal-soft'
+                    }`}
+                    onClick={() => onToggleHealthReminder && onToggleHealthReminder(nextHealthReminder.id)}
+                  >
+                    <Check size={13} />
+                    <span>{nextHealthReminder.completed ? 'Taken ✓' : 'Mark as Taken'}</span>
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="health-widget-empty">
+                <p>All daily health reminders checked off for today!</p>
+                <button
+                  type="button"
+                  className="btn btn-sm btn-secondary"
+                  onClick={() => onNavigate('/health')}
+                  style={{ marginTop: '6px' }}
+                >
+                  Manage Reminders
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Controls Section */}
-        <section className="controls-section" aria-label="Task controls">
-          <SearchFilterBar
-            search={searchQuery}
-            onSearchChange={onSearchChange}
-            statusFilter={statusFilter}
-            onStatusFilterChange={onStatusFilterChange}
-            priorityFilter={priorityFilter}
-            onPriorityFilterChange={onPriorityFilterChange}
-            sortBy={sortBy}
-            onSortChange={onSortChange}
-            viewMode={viewMode}
-            onViewModeChange={onViewModeChange}
-            totalResults={filteredTasks.length}
-            onResetFilters={onResetFilters}
-            isFiltered={isFiltered}
-          />
-        </section>
+        {/* Right: Recent Activity / Recently Completed */}
+        <div className="dashboard-card recent-activity-card">
+          <div className="dashboard-section-header">
+            <div className="section-title-group">
+              <CheckCircle2 size={16} className="text-emerald" />
+              <h3 className="dashboard-section-heading">Recent Milestones</h3>
+            </div>
+            <button
+              type="button"
+              className="section-link-btn"
+              onClick={() => onNavigate('/tasks')}
+            >
+              All Tasks <ArrowRight size={13} />
+            </button>
+          </div>
 
-        {/* Task Grid / Table Listing */}
-        <section className="task-content-section" aria-label="Task listing">
-          <TaskList
-            tasks={filteredTasks}
-            totalOriginalTasks={tasks.length}
-            searchQuery={searchQuery}
-            statusFilter={statusFilter}
-            priorityFilter={priorityFilter}
-            viewMode={viewMode}
-            onView={onViewTask}
-            onEdit={onEditTask}
-            onDelete={onDeleteTask}
-            onStatusChange={onStatusChange}
-            onCreateTask={onCreateTask}
-            onClearFilters={onResetFilters}
-            onResetTasks={onResetTasks}
-          />
-        </section>
-      </section>
+          <div className="recent-activity-body">
+            {recentlyCompleted.length === 0 ? (
+              <p className="dashboard-empty-text">No completed milestones yet. Complete a task to track velocity!</p>
+            ) : (
+              <div className="recent-milestones-list">
+                {recentlyCompleted.map((t) => (
+                  <div
+                    key={t.id}
+                    className="milestone-item"
+                    onClick={() => onViewTask(t)}
+                  >
+                    <CheckCircle2 size={14} className="text-emerald flex-shrink-0" />
+                    <span className="milestone-title strikethrough">{t.title}</span>
+                    <span className="milestone-badge">Done</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

@@ -1,6 +1,6 @@
 /**
- * Storage utilities for Gupio TaskHub
- * Manages localStorage persistence for Tasks, Users, Current User, Theme, Notifications, and Preferences.
+ * Storage utilities for TaskHub
+ * Manages localStorage persistence for Tasks, Users, Current User, Theme, Notifications, Preferences, and Health Reminders.
  */
 
 export const STORAGE_KEYS = {
@@ -10,6 +10,7 @@ export const STORAGE_KEYS = {
   THEME: 'gupio_theme',
   NOTIFICATIONS: 'gupio_notifications',
   PREFERENCES: 'gupio_preferences',
+  HEALTH_REMINDERS: 'taskhub_health_reminders',
 };
 
 /**
@@ -18,7 +19,7 @@ export const STORAGE_KEYS = {
 export const DEFAULT_DEMO_USER = {
   id: 'user-demo-1',
   name: 'Alex Morgan',
-  email: 'alex.morgan@gupio.dev',
+  email: 'alex.morgan@taskhub.dev',
   password: 'password123', // Frontend demonstration credential
   avatarInitials: 'AM',
   avatarColor: '#2563eb',
@@ -254,7 +255,12 @@ export function authenticateUser(email, password) {
   const users = loadUsersFromStorage();
   const normalizedEmail = email.trim().toLowerCase();
 
-  const user = users.find((u) => u.email.toLowerCase() === normalizedEmail);
+  const user = users.find(
+    (u) =>
+      u.email.toLowerCase() === normalizedEmail ||
+      (normalizedEmail === 'alex.morgan@taskhub.dev' && u.email.toLowerCase() === 'alex.morgan@gupio.dev') ||
+      (normalizedEmail === 'alex.morgan@gupio.dev' && u.email.toLowerCase() === 'alex.morgan@taskhub.dev')
+  );
   if (!user) {
     return { success: false, error: 'No account found with this email address.' };
   }
@@ -381,14 +387,47 @@ export function setStoredTheme(theme) {
    NOTIFICATIONS PERSISTENCE
    ========================================================================== */
 
+export const SAMPLE_NOTIFICATIONS = [
+  {
+    id: 'notif-sample-1',
+    signature: 'due-today-1',
+    title: '⚠️ Task Due Today',
+    message: 'Prepare Sprint 4 demo presentation is scheduled for completion today.',
+    type: 'warning',
+    read: false,
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: 'notif-health-1',
+    signature: 'health-vitamin-1',
+    title: '💊 Vitamin tablet reminder',
+    message: 'Scheduled reminder for 8:00 PM today. Keep consistent with daily wellness routines.',
+    type: 'info',
+    read: false,
+    createdAt: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
+  },
+  {
+    id: 'notif-sample-2',
+    signature: 'welcome-1',
+    title: '👋 Welcome to TaskHub',
+    message: 'Your personal workspace is ready. Plan, prioritize, and get things done!',
+    type: 'success',
+    read: true,
+    createdAt: new Date(Date.now() - 1000 * 60 * 120).toISOString(),
+  },
+];
+
 export function loadNotificationsFromStorage() {
   try {
     const raw = localStorage.getItem(STORAGE_KEYS.NOTIFICATIONS);
-    if (!raw) return [];
+    if (!raw) {
+      saveNotificationsToStorage(SAMPLE_NOTIFICATIONS);
+      return SAMPLE_NOTIFICATIONS;
+    }
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
+    return Array.isArray(parsed) && parsed.length > 0 ? parsed : SAMPLE_NOTIFICATIONS;
   } catch {
-    return [];
+    return SAMPLE_NOTIFICATIONS;
   }
 }
 
@@ -453,7 +492,7 @@ export function exportTasksToCSV(tasks = []) {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.setAttribute('href', url);
-  link.setAttribute('download', `gupio-tasks-${new Date().toISOString().split('T')[0]}.csv`);
+  link.setAttribute('download', `taskhub-tasks-${new Date().toISOString().split('T')[0]}.csv`);
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -466,9 +505,107 @@ export function exportTasksToJSON(tasks = []) {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.setAttribute('href', url);
-  link.setAttribute('download', `gupio-tasks-${new Date().toISOString().split('T')[0]}.json`);
+  link.setAttribute('download', `taskhub-tasks-${new Date().toISOString().split('T')[0]}.json`);
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
+}
+
+/* ==========================================================================
+   HEALTH REMINDERS STORAGE
+   ========================================================================== */
+
+export const SAMPLE_HEALTH_REMINDERS = [
+  {
+    id: 'health-1',
+    userId: 'user-demo-1',
+    name: 'Vitamin tablet',
+    description: 'Take with dinner and a glass of water',
+    time: '8:00 PM',
+    date: new Date().toISOString().split('T')[0],
+    frequency: 'Daily',
+    category: 'Medication',
+    completed: false,
+    createdAt: new Date(Date.now() - 3600000 * 24).toISOString(),
+  },
+  {
+    id: 'health-2',
+    userId: 'user-demo-1',
+    name: 'Hydration check (500ml)',
+    description: 'Drink fresh water between sprint tasks',
+    time: '2:00 PM',
+    date: new Date().toISOString().split('T')[0],
+    frequency: 'Daily',
+    category: 'Water',
+    completed: true,
+    createdAt: new Date(Date.now() - 3600000 * 20).toISOString(),
+  },
+  {
+    id: 'health-3',
+    userId: 'user-demo-1',
+    name: 'Posture stretch & quick walk',
+    description: '5-minute standing spine stretch and hallway walk',
+    time: '4:30 PM',
+    date: new Date().toISOString().split('T')[0],
+    frequency: 'Weekdays',
+    category: 'Exercise',
+    completed: false,
+    createdAt: new Date(Date.now() - 3600000 * 18).toISOString(),
+  },
+  {
+    id: 'health-4',
+    userId: 'user-demo-1',
+    name: 'Eye break (20-20-20 rule)',
+    description: 'Rest eyes by looking at an object 20 feet away for 20 seconds',
+    time: '11:30 AM',
+    date: new Date().toISOString().split('T')[0],
+    frequency: 'Daily',
+    category: 'General Wellness',
+    completed: false,
+    createdAt: new Date(Date.now() - 3600000 * 16).toISOString(),
+  },
+];
+
+export function loadHealthRemindersFromStorage(userId) {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.HEALTH_REMINDERS);
+    if (!raw) {
+      saveHealthRemindersToStorage(userId, SAMPLE_HEALTH_REMINDERS);
+      return SAMPLE_HEALTH_REMINDERS;
+    }
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      saveHealthRemindersToStorage(userId, SAMPLE_HEALTH_REMINDERS);
+      return SAMPLE_HEALTH_REMINDERS;
+    }
+    if (userId) {
+      const userReminders = parsed.filter((r) => (r.userId || 'user-demo-1') === userId);
+      return userReminders.length > 0 ? userReminders : SAMPLE_HEALTH_REMINDERS;
+    }
+    return parsed;
+  } catch (err) {
+    console.error('Error reading health reminders:', err);
+    return SAMPLE_HEALTH_REMINDERS;
+  }
+}
+
+export function saveHealthRemindersToStorage(userId, reminders) {
+  try {
+    let all = [];
+    const raw = localStorage.getItem(STORAGE_KEYS.HEALTH_REMINDERS);
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) all = parsed;
+      } catch {}
+    }
+    const otherUsers = all.filter((r) => (r.userId || 'user-demo-1') !== userId);
+    const updated = [...otherUsers, ...reminders];
+    localStorage.setItem(STORAGE_KEYS.HEALTH_REMINDERS, JSON.stringify(updated));
+    return true;
+  } catch (err) {
+    console.error('Failed to save health reminders:', err);
+    return false;
+  }
 }

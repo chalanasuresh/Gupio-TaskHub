@@ -21,6 +21,23 @@ export default function NotificationDropdown({ isOpen, onClose, onViewTask }) {
     clearNotifications,
   } = useNotifications();
 
+  const [browserPermission, setBrowserPermission] = React.useState(() => {
+    return typeof window !== 'undefined' && 'Notification' in window
+      ? Notification.permission
+      : 'unsupported';
+  });
+
+  const requestBrowserPermission = async () => {
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      try {
+        const res = await Notification.requestPermission();
+        setBrowserPermission(res);
+      } catch {
+        // ignore
+      }
+    }
+  };
+
   // Close when clicking outside
   useEffect(() => {
     function handleClickOutside(e) {
@@ -79,6 +96,22 @@ export default function NotificationDropdown({ isOpen, onClose, onViewTask }) {
           </button>
         </div>
       </div>
+
+      {browserPermission === 'default' && (
+        <div className="notif-permission-banner">
+          <div className="notif-perm-text">
+            <span className="notif-perm-title">Enable desktop notifications</span>
+            <span className="notif-perm-subtitle">Alerts appear while TaskHub is active in your browser</span>
+          </div>
+          <button
+            type="button"
+            className="btn-perm-enable"
+            onClick={requestBrowserPermission}
+          >
+            Enable
+          </button>
+        </div>
+      )}
 
       <div className="notif-dropdown-body">
         {notifications.length === 0 ? (

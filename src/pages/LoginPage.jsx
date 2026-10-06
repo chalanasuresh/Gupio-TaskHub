@@ -64,7 +64,7 @@ export default function LoginPage() {
 
   function fillDemoCredentials() {
     setFormData({
-      email: 'alex.morgan@gupio.dev',
+      email: 'alex.morgan@taskhub.dev',
       password: 'password123',
       rememberMe: true,
     });
@@ -87,13 +87,13 @@ export default function LoginPage() {
             <Sparkles size={24} className="text-brand-accent" />
           </div>
           <div>
-            <h1 className="auth-brand-name">Gupio TaskHub</h1>
-            <p className="auth-brand-subtitle">Productivity & Task Management</p>
+            <h1 className="auth-brand-name">TaskHub</h1>
+            <p className="auth-brand-subtitle">Plan. Prioritize. Get Things Done.</p>
           </div>
         </div>
 
         <div className="auth-hero-content">
-          <span className="auth-tagline-badge">Campus Placement Assignment • Option 1</span>
+          <span className="auth-tagline-badge">Productivity Workspace</span>
           <h2 className="auth-hero-headline">
             Get more done. Stay organized.
           </h2>
@@ -127,7 +127,7 @@ export default function LoginPage() {
 
         <div className="auth-hero-footer">
           <ShieldCheck size={16} className="text-emerald" />
-          <span>Demo Authentication • Safe Frontend Demonstration Layer</span>
+          <span>Demo Authentication • Local Browser Persistence</span>
         </div>
       </div>
 
@@ -143,7 +143,7 @@ export default function LoginPage() {
           <div className="demo-credentials-banner">
             <div className="demo-credentials-text">
               <span className="demo-pill">Demo Account</span>
-              <code>alex.morgan@gupio.dev</code> / <code>password123</code>
+              <code>alex.morgan@taskhub.dev</code> / <code>password123</code>
             </div>
             <button
               type="button"

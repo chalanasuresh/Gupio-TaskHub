@@ -1,5 +1,5 @@
 /**
- * Automated Verification Script for Gupio TaskHub
+ * Automated Verification Script for TaskHub
  * Validates storage, taskUtils, calculations, filtering, sorting, and validation rules.
  */
 
@@ -27,7 +27,7 @@ function assert(condition, message) {
   }
 }
 
-console.log('--- RUNNING GUPIO TASKHUB VERIFICATION TESTS ---');
+console.log('--- RUNNING TASKHUB VERIFICATION TESTS ---');
 
 // 1. Test Task Model & Sample Tasks
 console.log('\n[1] Verifying Sample Tasks & Model Structure');
