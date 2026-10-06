@@ -245,6 +245,10 @@ export function registerUser({ name, email, password }) {
   saveUsersToStorage(updatedUsers);
   saveCurrentUserToStorage(newUser);
 
+  // Seed sample tasks & wellness reminders for new users
+  resetUserTasksToSample(newUser.id);
+  saveHealthRemindersToStorage(newUser.id, SAMPLE_HEALTH_REMINDERS);
+
   return { success: true, user: newUser };
 }
 

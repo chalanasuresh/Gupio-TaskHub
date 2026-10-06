@@ -140,10 +140,11 @@ export default function DashboardPage({
           </div>
           <button
             type="button"
-            className="section-link-btn"
+            className="btn-section-action-purple"
             onClick={() => onNavigate('/tasks')}
           >
-            View in Tasks <ArrowRight size={13} />
+            <span>View in Tasks</span>
+            <ArrowRight size={13} />
           </button>
         </div>
 
@@ -200,6 +201,18 @@ export default function DashboardPage({
                       <span className={`badge badge-priority badge-priority-${task.priority.toLowerCase()}`}>
                         {task.priority}
                       </span>
+                      <button
+                        type="button"
+                        className="btn-focus-view-purple"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onViewTask(task);
+                        }}
+                        title="View Task"
+                      >
+                        <span>View</span>
+                        <ArrowRight size={12} />
+                      </button>
                     </div>
                   </div>
                 );
@@ -221,10 +234,11 @@ export default function DashboardPage({
             </div>
             <button
               type="button"
-              className="section-link-btn"
+              className="btn-section-action-purple"
               onClick={() => onNavigate('/calendar')}
             >
-              Calendar <ArrowRight size={13} />
+              <span>Calendar</span>
+              <ArrowRight size={13} />
             </button>
           </div>
 
@@ -258,10 +272,11 @@ export default function DashboardPage({
             </div>
             <button
               type="button"
-              className="section-link-btn"
+              className="btn-section-action-purple"
               onClick={() => onNavigate('/analytics')}
             >
-              Full Analytics <ArrowRight size={13} />
+              <span>Full Analytics</span>
+              <ArrowRight size={13} />
             </button>
           </div>
 
@@ -303,39 +318,60 @@ export default function DashboardPage({
         <div className="dashboard-card health-widget-card">
           <div className="dashboard-section-header">
             <div className="section-title-group">
-              <span style={{ fontSize: '16px' }}>💊</span>
+              <span style={{ fontSize: '18px' }}>💊</span>
               <h3 className="dashboard-section-heading">Health Reminder</h3>
             </div>
             <button
               type="button"
-              className="section-link-btn text-teal"
+              className="btn-section-action-purple"
               onClick={() => onNavigate('/health')}
             >
-              View Health <ArrowRight size={13} />
+              <span>View Health</span>
+              <ArrowRight size={13} />
             </button>
           </div>
 
           <div className="health-widget-body">
             {nextHealthReminder ? (
-              <div className="health-widget-item">
-                <div className="health-widget-text">
+              <div className="health-widget-square-box">
+                <div className="health-widget-top-row">
                   <span className="health-widget-sublabel">Next reminder</span>
-                  <strong className="health-widget-name">{nextHealthReminder.name}</strong>
-                  <span className="health-widget-timing">
-                    Today · {nextHealthReminder.time}
-                  </span>
+                  <span className="health-widget-cat-badge">{nextHealthReminder.category}</span>
                 </div>
 
-                <div className="health-widget-actions">
+                <h4 className="health-widget-name">{nextHealthReminder.name}</h4>
+
+                <div className="health-widget-time-row">
+                  <Clock size={13} className="text-teal" />
+                  <span>Today · {nextHealthReminder.time}</span>
+                </div>
+
+                <div className="health-widget-buttons-row">
                   <button
                     type="button"
-                    className={`btn btn-sm ${
-                      nextHealthReminder.completed ? 'btn-secondary text-emerald' : 'btn-teal-soft'
-                    }`}
+                    className={`btn-widget-taken ${nextHealthReminder.completed ? 'is-completed' : ''}`}
                     onClick={() => onToggleHealthReminder && onToggleHealthReminder(nextHealthReminder.id)}
                   >
-                    <Check size={13} />
-                    <span>{nextHealthReminder.completed ? 'Taken ✓' : 'Mark as Taken'}</span>
+                    {nextHealthReminder.completed ? (
+                      <>
+                        <CheckCircle2 size={15} />
+                        <span>Taken ✓</span>
+                      </>
+                    ) : (
+                      <>
+                        <Check size={15} />
+                        <span>Mark as Taken</span>
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
+                    className="btn-widget-purple-view"
+                    onClick={() => onNavigate('/health')}
+                  >
+                    <span>View Health</span>
+                    <ArrowRight size={13} />
                   </button>
                 </div>
               </div>
@@ -344,11 +380,12 @@ export default function DashboardPage({
                 <p>All daily health reminders checked off for today!</p>
                 <button
                   type="button"
-                  className="btn btn-sm btn-secondary"
+                  className="btn-section-action-purple"
                   onClick={() => onNavigate('/health')}
-                  style={{ marginTop: '6px' }}
+                  style={{ marginTop: '10px' }}
                 >
-                  Manage Reminders
+                  <span>Manage Reminders</span>
+                  <ArrowRight size={13} />
                 </button>
               </div>
             )}
@@ -364,10 +401,11 @@ export default function DashboardPage({
             </div>
             <button
               type="button"
-              className="section-link-btn"
+              className="btn-section-action-purple"
               onClick={() => onNavigate('/tasks')}
             >
-              All Tasks <ArrowRight size={13} />
+              <span>All Tasks</span>
+              <ArrowRight size={13} />
             </button>
           </div>
 

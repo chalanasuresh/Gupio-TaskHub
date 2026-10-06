@@ -244,20 +244,20 @@ function WorkspaceShell() {
   }, [currentPath]);
 
   // 1. If user is on authentication routes
-  if (!isAuthenticated || currentPath === '/login') {
-    return (
-      <>
-        <Toast toasts={toasts} onDismiss={removeToast} />
-        <LoginPage />
-      </>
-    );
-  }
-
   if (currentPath === '/signup') {
     return (
       <>
         <Toast toasts={toasts} onDismiss={removeToast} />
         <SignupPage />
+      </>
+    );
+  }
+
+  if (!isAuthenticated || currentPath === '/login') {
+    return (
+      <>
+        <Toast toasts={toasts} onDismiss={removeToast} />
+        <LoginPage />
       </>
     );
   }
@@ -327,7 +327,13 @@ function WorkspaceShell() {
               onDeleteTask={(task) => setTaskToDelete(task)}
               onStatusChange={handleStatusChange}
               onCreateTask={() => handleOpenCreateModal('Todo')}
-              onResetTasks={() => setIsResetConfirmOpen(true)}
+              onResetTasks={() => {
+                if (tasks.length === 0) {
+                  handleConfirmReset();
+                } else {
+                  setIsResetConfirmOpen(true);
+                }
+              }}
             />
           )}
 

@@ -270,28 +270,30 @@ a {
   display: flex;
   min-height: 100vh;
   width: 100%;
-  overflow-x: hidden;
   background-color: var(--bg-main);
+  position: relative;
 }
 
 .app-main-layout {
   flex: 1;
   min-width: 0;
+  margin-left: var(--sidebar-width);
   display: flex;
   flex-direction: column;
   background-color: var(--bg-main);
+  min-height: 100vh;
 }
 
 .app-content-body {
   flex: 1;
-  padding: 20px 24px;
+  padding: 24px 28px;
   max-width: 1440px;
   margin: 0 auto;
   width: 100%;
 }
 
 /* --------------------------------------------------------------------------
-   4. Sidebar (232px Narrow & Clean)
+   4. Sidebar (232px Narrow & Clean - Pinned to Left Screen)
    -------------------------------------------------------------------------- */
 .app-sidebar {
   width: var(--sidebar-width);
@@ -301,11 +303,15 @@ a {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  position: sticky;
+  position: fixed;
   top: 0;
+  bottom: 0;
+  left: 0;
   z-index: 50;
   user-select: none;
   transition: transform var(--transition-normal);
+  overflow-y: auto;
+  scrollbar-width: thin;
 }
 
 .sidebar-brand-wrapper {
@@ -3334,6 +3340,11 @@ a {
 }
 
 @media (max-width: 1024px) {
+  .app-main-layout {
+    margin-left: 0;
+    width: 100%;
+  }
+
   .app-sidebar {
     position: fixed;
     top: 0;
@@ -4064,10 +4075,11 @@ a {
 /* --------------------------------------------------------------------------
    21. Health Page (/health)
    -------------------------------------------------------------------------- */
+.health-page-container,
 .health-page-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 22px;
+  gap: 20px;
   width: 100%;
   padding-bottom: 32px;
 }
@@ -4076,19 +4088,33 @@ a {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
+  gap: 18px;
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
   border-left: 4px solid var(--teal);
   border-radius: var(--radius-lg);
-  padding: 22px 26px;
+  padding: 20px 24px;
   box-shadow: var(--shadow-xs);
+  flex-wrap: wrap;
 }
 
 .health-header-left {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 5px;
+  min-width: 260px;
+  flex: 1;
+}
+
+.health-brand-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--teal);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .health-page-title {
@@ -4101,17 +4127,47 @@ a {
   gap: 10px;
 }
 
-.health-page-subtitle {
+.health-page-desc {
   font-size: 13px;
   color: var(--text-secondary);
   margin: 0;
+  line-height: 1.45;
 }
 
-/* Metrics Strip */
+.health-header-right {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.btn-health-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 18px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(13, 148, 136, 0.35);
+  transition: all var(--transition-fast);
+}
+
+.btn-health-add:hover {
+  background: linear-gradient(135deg, #0f766e 0%, #115e59 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(13, 148, 136, 0.45);
+}
+
+/* Metrics Strip - 4 Square/Compact Stat Tiles */
 .health-metrics-strip {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 14px;
+  width: 100%;
 }
 
 .health-metric-tile {
@@ -4121,13 +4177,20 @@ a {
   padding: 14px 16px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   box-shadow: var(--shadow-xs);
+  transition: all var(--transition-fast);
+}
+
+.health-metric-tile:hover {
+  border-color: var(--border-medium);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
 }
 
 .health-metric-icon {
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   border-radius: var(--radius-md);
   display: flex;
   align-items: center;
@@ -4150,27 +4213,30 @@ a {
   color: var(--warning);
 }
 
-.health-metric-tile.blue .health-metric-icon {
-  background: var(--primary-light);
-  color: var(--primary);
+.health-metric-tile.purple .health-metric-icon {
+  background: rgba(139, 92, 246, 0.12);
+  color: #7c3aed;
 }
 
 .health-metric-info {
   display: flex;
   flex-direction: column;
-}
-
-.health-metric-val {
-  font-size: 18px;
-  font-weight: 800;
-  color: var(--text-main);
-  line-height: 1.1;
+  gap: 2px;
 }
 
 .health-metric-lbl {
   font-size: 11px;
   color: var(--text-muted);
-  font-weight: 500;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.health-metric-val {
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--text-main);
+  line-height: 1.1;
 }
 
 /* Category Filter Bar */
@@ -4178,8 +4244,10 @@ a {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 14px;
+  gap: 12px;
   flex-wrap: wrap;
+  width: 100%;
+  padding: 2px 0;
 }
 
 .health-category-pills {
@@ -4189,11 +4257,12 @@ a {
   flex-wrap: wrap;
 }
 
+.health-cat-pill,
 .health-pill-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 14px;
+  gap: 7px;
+  padding: 7px 14px;
   border-radius: var(--radius-full);
   font-size: 12.5px;
   font-weight: 600;
@@ -4202,25 +4271,83 @@ a {
   color: var(--text-secondary);
   cursor: pointer;
   transition: all var(--transition-fast);
+  user-select: none;
 }
 
+.health-cat-pill:hover,
 .health-pill-btn:hover {
-  border-color: var(--border-medium);
+  border-color: var(--teal);
   color: var(--text-main);
+  transform: translateY(-1px);
 }
 
+.health-cat-pill.active,
 .health-pill-btn.active {
-  background: var(--teal);
+  background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
   color: #ffffff;
+  border-color: #0d9488;
+  box-shadow: 0 2px 8px rgba(13, 148, 136, 0.35);
+  font-weight: 700;
+}
+
+.pill-emoji {
+  font-size: 13px;
+  line-height: 1;
+}
+
+.pill-name {
+  line-height: 1;
+}
+
+.pill-count-bubble {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9999px;
+  font-size: 10.5px;
+  font-weight: 800;
+  background: var(--bg-surface-subtle);
+  color: var(--text-muted);
+  border: 1px solid var(--border-subtle);
+  line-height: 1;
+}
+
+.health-cat-pill.active .pill-count-bubble {
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.btn-health-reset {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--radius-md);
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px dashed var(--border-subtle);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-health-reset:hover {
+  color: var(--teal);
   border-color: var(--teal);
-  box-shadow: 0 2px 8px rgba(13, 148, 136, 0.25);
+  background: var(--teal-light);
 }
 
 /* Reminders Grid */
 .health-reminders-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
   gap: 16px;
+  width: 100%;
 }
 
 .health-reminder-card {
@@ -4230,10 +4357,12 @@ a {
   padding: 18px 20px;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   gap: 14px;
   box-shadow: var(--shadow-xs);
   transition: all var(--transition-fast);
   position: relative;
+  min-height: 180px;
 }
 
 .health-reminder-card:hover {
@@ -4242,127 +4371,112 @@ a {
   transform: translateY(-2px);
 }
 
+.health-reminder-card.is-completed,
 .health-reminder-card.completed {
   background: var(--bg-surface-subtle);
-  border-color: var(--border-subtle);
-  opacity: 0.8;
+  border-color: rgba(16, 185, 129, 0.3);
+  opacity: 0.9;
 }
 
+.health-card-top,
 .reminder-card-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
+  width: 100%;
 }
 
+.health-category-tag,
 .reminder-category-tag {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  padding: 3px 8px;
-  border-radius: var(--radius-sm);
-  font-size: 11px;
+  padding: 3px 9px;
+  border-radius: var(--radius-full);
+  font-size: 11.5px;
   font-weight: 700;
   background: var(--teal-light);
   color: var(--teal-text);
   border: 1px solid var(--teal-border);
 }
 
+.health-status-badge,
 .reminder-status-badge {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 3px 8px;
+  padding: 3px 9px;
   border-radius: var(--radius-full);
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
 }
 
-.reminder-status-badge.taken {
-  background: var(--success-light);
-  color: var(--success-text);
-  border: 1px solid var(--success-border);
-}
-
+.health-status-badge.upcoming,
 .reminder-status-badge.upcoming {
   background: var(--warning-light);
   color: var(--warning-text);
   border: 1px solid var(--warning-border);
 }
 
+.health-status-badge.done,
+.reminder-status-badge.taken {
+  background: var(--success-light);
+  color: var(--success-text);
+  border: 1px solid var(--success-border);
+}
+
+.health-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.health-reminder-name,
 .reminder-title {
   font-size: 15px;
   font-weight: 700;
   color: var(--text-main);
   margin: 0;
-  line-height: 1.3;
+  line-height: 1.35;
 }
 
+.health-reminder-name.strikethrough,
 .health-reminder-card.completed .reminder-title {
   text-decoration: line-through;
   color: var(--text-muted);
 }
 
+.health-reminder-note,
 .reminder-desc {
-  font-size: 12px;
+  font-size: 12.5px;
   color: var(--text-secondary);
   margin: 0;
-  line-height: 1.4;
+  line-height: 1.45;
 }
 
+.health-reminder-timing,
 .reminder-meta-row {
   display: flex;
   align-items: center;
-  gap: 14px;
-  font-size: 11.5px;
-  color: var(--text-muted);
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 4px;
 }
 
+.timing-pill,
 .reminder-meta-item {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-}
-
-.reminder-actions-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding-top: 12px;
-  border-top: 1px solid var(--border-subtle);
-}
-
-.btn-mark-taken {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border-radius: var(--radius-md);
-  font-size: 12px;
+  padding: 4px 9px;
+  border-radius: var(--radius-sm);
+  font-size: 11.5px;
   font-weight: 600;
-  border: 1px solid var(--teal-border);
-  background: var(--teal-light);
-  color: var(--teal-text);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.btn-mark-taken:hover {
-  background: var(--teal);
-  color: #ffffff;
-}
-
-.btn-mark-taken.completed {
   background: var(--bg-surface-subtle);
-  color: var(--text-muted);
-  border-color: var(--border-subtle);
-}
-
-.reminder-secondary-actions {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-subtle);
 }
 
 /* Category Radio Grid in Modal */
@@ -5170,4 +5284,436 @@ a {
   .dashboard-stats-row {
     grid-template-columns: 1fr;
   }
+}
+
+/* --------------------------------------------------------------------------
+   24. Premium Button & Card Upgrades (Vibrant, Responsive, Square-Organized)
+   -------------------------------------------------------------------------- */
+/* Section Header Purple Buttons */
+.btn-section-action-purple,
+.section-link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  cursor: pointer;
+  padding: 6px 14px;
+  border-radius: var(--radius-md);
+  box-shadow: 0 2px 6px rgba(139, 92, 246, 0.35);
+  transition: all var(--transition-fast);
+}
+
+.btn-section-action-purple:hover,
+.section-link-btn:hover {
+  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.45);
+  color: #ffffff !important;
+}
+
+/* Today's Focus Item View Button */
+.btn-focus-view-purple {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #ffffff;
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  border: none;
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: var(--radius-sm);
+  box-shadow: 0 2px 5px rgba(139, 92, 246, 0.25);
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.btn-focus-view-purple:hover {
+  background: #6d28d9;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(139, 92, 246, 0.4);
+}
+
+/* Action Buttons Everywhere (Tasks table, Task cards, etc.) */
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-xs);
+}
+
+.action-btn:hover {
+  transform: translateY(-1px);
+}
+
+.action-btn.action-view:hover {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.35);
+}
+
+.action-btn.action-edit {
+  background: #f5f3ff;
+  color: #7c3aed;
+  border-color: #ddd6fe;
+}
+
+.action-btn.action-edit:hover {
+  background: #8b5cf6;
+  border-color: #8b5cf6;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(139, 92, 246, 0.35);
+}
+
+.action-btn.action-delete {
+  background: #fef2f2;
+  color: #dc2626;
+  border-color: #fecaca;
+}
+
+.action-btn.action-delete:hover {
+  background: #ef4444;
+  border-color: #ef4444;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.35);
+}
+
+/* Dashboard Health Reminder Widget */
+.health-widget-square-box {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 18px;
+  background: var(--bg-surface);
+  border: 1px solid var(--teal-border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 2px 10px rgba(13, 148, 136, 0.08);
+}
+
+:root[data-theme="dark"] .health-widget-square-box {
+  background: rgba(20, 184, 166, 0.06);
+  border-color: rgba(45, 212, 191, 0.25);
+}
+
+.health-widget-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.health-widget-cat-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  background: var(--teal-light);
+  color: var(--teal-text);
+  border: 1px solid var(--teal-border);
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.health-widget-time-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.health-widget-buttons-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+
+.btn-widget-taken {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(13, 148, 136, 0.35);
+  transition: all var(--transition-fast);
+}
+
+.btn-widget-taken:hover {
+  background: linear-gradient(135deg, #0f766e 0%, #115e59 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(13, 148, 136, 0.45);
+}
+
+.btn-widget-taken.is-completed {
+  background: var(--success-light);
+  color: var(--success-text);
+  border: 1px solid var(--success-border);
+  box-shadow: none;
+}
+
+.btn-widget-purple-view {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(139, 92, 246, 0.35);
+  transition: all var(--transition-fast);
+}
+
+.btn-widget-purple-view:hover {
+  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(139, 92, 246, 0.45);
+}
+
+/* Health Page Organized Card & Buttons */
+.health-card-actions-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-subtle);
+  flex-wrap: wrap;
+}
+
+.btn-health-mark-taken {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(13, 148, 136, 0.35);
+  transition: all var(--transition-fast);
+}
+
+.btn-health-mark-taken:hover {
+  background: linear-gradient(135deg, #0f766e 0%, #115e59 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(13, 148, 136, 0.45);
+}
+
+.btn-health-mark-taken.is-taken {
+  background: var(--success-light);
+  color: var(--success-text);
+  border: 1px solid var(--success-border);
+  box-shadow: none;
+}
+
+.health-card-secondary-btns {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-health-edit-purple {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
+  font-size: 12.5px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(139, 92, 246, 0.35);
+  transition: all var(--transition-fast);
+}
+
+.btn-health-edit-purple:hover {
+  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(139, 92, 246, 0.45);
+}
+
+.btn-health-delete {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  font-size: 12.5px;
+  font-weight: 600;
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-health-delete:hover {
+  background: #ef4444;
+  border-color: #ef4444;
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.35);
+}
+
+/* --------------------------------------------------------------------------
+   25. Empty State Cards (Tasks, Backlog, Search, Filters)
+   -------------------------------------------------------------------------- */
+.empty-state-card {
+  background: var(--bg-surface);
+  border: 1px dashed var(--border-medium);
+  border-radius: var(--radius-xl);
+  padding: 48px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  margin: 36px auto;
+  max-width: 580px;
+  width: 100%;
+  box-shadow: 0 2px 12px rgba(15, 23, 42, 0.04);
+  transition: all var(--transition-fast);
+}
+
+.empty-state-card:hover {
+  border-color: var(--primary);
+  box-shadow: var(--shadow-sm);
+}
+
+:root[data-theme="dark"] .empty-state-card {
+  background: var(--bg-surface);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.empty-icon-wrap {
+  width: 68px;
+  height: 68px;
+  border-radius: var(--radius-xl);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 18px;
+  background: rgba(37, 99, 235, 0.08);
+  color: var(--primary);
+  border: 1px solid rgba(37, 99, 235, 0.2);
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.12);
+}
+
+.empty-icon-wrap.bg-blue-subtle,
+.empty-icon-wrap.bg-primary-subtle {
+  background: rgba(37, 99, 235, 0.08);
+  color: #2563eb;
+  border-color: rgba(37, 99, 235, 0.22);
+}
+
+.empty-icon-wrap.bg-amber-subtle {
+  background: rgba(245, 158, 11, 0.1);
+  color: #d97706;
+  border-color: rgba(245, 158, 11, 0.25);
+}
+
+.empty-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text-main);
+  margin: 0 0 8px 0;
+  letter-spacing: -0.01em;
+}
+
+.empty-desc {
+  font-size: 13.5px;
+  color: var(--text-secondary);
+  max-width: 440px;
+  margin: 0 0 24px 0;
+  line-height: 1.5;
+}
+
+.empty-query {
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.empty-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.btn-empty-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
+  transition: all var(--transition-fast);
+}
+
+.btn-empty-primary:hover {
+  background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.45);
+  color: #ffffff;
+}
+
+.btn-empty-purple {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.35);
+  transition: all var(--transition-fast);
+}
+
+.btn-empty-purple:hover {
+  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.45);
+  color: #ffffff;
 }

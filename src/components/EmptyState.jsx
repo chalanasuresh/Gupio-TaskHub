@@ -13,7 +13,7 @@ export default function EmptyState({
     return (
       <div className="empty-state-card">
         <div className="empty-icon-wrap bg-blue-subtle">
-          <SearchX size={36} className="text-blue" />
+          <SearchX size={34} className="text-primary" />
         </div>
         <h3 className="empty-title">No matching tasks found</h3>
         <p className="empty-desc">
@@ -21,7 +21,7 @@ export default function EmptyState({
         </p>
         <button
           type="button"
-          className="btn btn-secondary"
+          className="btn-empty-primary"
           onClick={onClearFilters}
         >
           Clear Search Query
@@ -34,7 +34,7 @@ export default function EmptyState({
     return (
       <div className="empty-state-card">
         <div className="empty-icon-wrap bg-amber-subtle">
-          <FilterX size={36} className="text-amber" />
+          <FilterX size={34} className="text-warning" />
         </div>
         <h3 className="empty-title">No tasks in this view</h3>
         <p className="empty-desc">
@@ -42,7 +42,7 @@ export default function EmptyState({
         </p>
         <button
           type="button"
-          className="btn btn-secondary"
+          className="btn-empty-primary"
           onClick={onClearFilters}
         >
           Reset All Filters
@@ -55,7 +55,7 @@ export default function EmptyState({
   return (
     <div className="empty-state-card">
       <div className="empty-icon-wrap bg-primary-subtle">
-        <ClipboardList size={38} className="text-primary" />
+        <ClipboardList size={36} className="text-primary" />
       </div>
       <h3 className="empty-title">No tasks created yet</h3>
       <p className="empty-desc">
@@ -65,7 +65,7 @@ export default function EmptyState({
         {onCreateTask && (
           <button
             type="button"
-            className="btn btn-primary"
+            className="btn-empty-primary"
             onClick={onCreateTask}
           >
             <Plus size={16} />
@@ -75,10 +75,10 @@ export default function EmptyState({
         {onResetTasks && (
           <button
             type="button"
-            className="btn btn-secondary"
+            className="btn-empty-purple"
             onClick={onResetTasks}
           >
-            <RotateCcw size={16} />
+            <RotateCcw size={15} />
             <span>Load Sample Tasks</span>
           </button>
         )}
