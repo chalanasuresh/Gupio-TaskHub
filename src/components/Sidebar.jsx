@@ -7,8 +7,6 @@ import {
   BarChart3,
   User,
   Settings,
-  Database,
-  RotateCcw,
   X,
   Sparkles,
   LogOut,
@@ -20,7 +18,6 @@ export default function Sidebar({
   isOpen,
   onClose,
   stats,
-  onResetDataClick,
 }) {
   const { currentPath, navigate } = useRouter();
   const { currentUser, logout } = useAuth();
@@ -95,7 +92,7 @@ export default function Sidebar({
           </div>
           <div className="brand-text-block">
             <h1 className="brand-title">Gupio TaskHub</h1>
-            <p className="brand-subtitle">Task Management Dashboard</p>
+            <p className="brand-subtitle">Productivity Workspace</p>
           </div>
           <button
             type="button"
@@ -105,14 +102,6 @@ export default function Sidebar({
           >
             <X size={20} />
           </button>
-        </div>
-
-        {/* Assignment disclaimer pill */}
-        <div className="sidebar-badge-container">
-          <div className="assignment-badge">
-            <span className="badge-dot" />
-            <span>Placement Assignment • Option 1</span>
-          </div>
         </div>
 
         {/* Primary Navigation */}
@@ -132,6 +121,7 @@ export default function Sidebar({
                   className={`sidebar-nav-item ${isActive ? 'active' : ''}`}
                   onClick={() => handleNav(item.path)}
                 >
+                  <span className="nav-active-pill" />
                   <Icon size={18} className="nav-item-icon" />
                   <span className="nav-item-label">{item.label}</span>
                   {item.badge !== null && item.badge !== undefined && (
@@ -142,8 +132,8 @@ export default function Sidebar({
             })}
           </nav>
 
-          <div className="sidebar-section-label" style={{ marginTop: '16px' }}>
-            ACCOUNT & CONFIG
+          <div className="sidebar-section-label" style={{ marginTop: '20px' }}>
+            PERSONAL
           </div>
           <nav className="sidebar-nav-list">
             {secondaryNavItems.map((item) => {
@@ -157,6 +147,7 @@ export default function Sidebar({
                   className={`sidebar-nav-item ${isActive ? 'active' : ''}`}
                   onClick={() => handleNav(item.path)}
                 >
+                  <span className="nav-active-pill" />
                   <Icon size={18} className="nav-item-icon" />
                   <span className="nav-item-label">{item.label}</span>
                 </button>
@@ -193,24 +184,6 @@ export default function Sidebar({
               </button>
             </div>
           )}
-
-          <div className="system-status-card">
-            <div className="system-status-header">
-              <Database size={15} className="text-emerald" />
-              <span className="system-status-title">LocalStorage Active</span>
-            </div>
-            {onResetDataClick && (
-              <button
-                type="button"
-                className="btn-sidebar-action"
-                onClick={onResetDataClick}
-                title="Restore initial sample tasks"
-              >
-                <RotateCcw size={14} />
-                <span>Reset Sample Tasks</span>
-              </button>
-            )}
-          </div>
         </div>
       </aside>
     </>

@@ -28,7 +28,7 @@ export default function KanbanBoardPage({
     {
       id: 'Todo',
       title: 'TODO',
-      color: 'slate',
+      color: 'amber',
       icon: Circle,
       tasks: tasks.filter((t) => t.status === 'Todo'),
     },

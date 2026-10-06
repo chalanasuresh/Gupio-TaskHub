@@ -255,7 +255,6 @@ function WorkspaceShell() {
         isOpen={isSidebarOpenMobile}
         onClose={() => setIsSidebarOpenMobile(false)}
         stats={stats}
-        onResetDataClick={() => setIsResetConfirmOpen(true)}
       />
 
       {/* Main Workspace Area */}

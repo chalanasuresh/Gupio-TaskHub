@@ -118,28 +118,32 @@ export default function SignupPage() {
         <div className="auth-hero-content">
           <span className="auth-tagline-badge">New Workspace Registration</span>
           <h2 className="auth-hero-headline">
-            Start organizing your engineering milestones today.
+            Get more done. Stay organized.
           </h2>
           <p className="auth-hero-subtext">
-            Join thousands of developers prioritizing team sprints with real-time statistics, deadline tracking, and fluid Kanban layouts.
+            A modern, unified productivity workspace built to manage sprints, track deadlines, and organize your daily workflow.
           </p>
 
-          <div className="auth-benefits-box">
-            <div className="benefit-row">
-              <Check size={16} className="text-emerald" />
-              <span>Full local data ownership & zero telemetry</span>
+          <div className="auth-feature-list">
+            <div className="auth-feature-item">
+              <div className="feature-check-icon">
+                <Check size={18} className="text-emerald" />
+              </div>
+              <span className="feature-text">Smart task tracking</span>
             </div>
-            <div className="benefit-row">
-              <Check size={16} className="text-emerald" />
-              <span>Fluid Kanban board with drag-and-drop workflow</span>
+
+            <div className="auth-feature-item">
+              <div className="feature-check-icon">
+                <Check size={18} className="text-emerald" />
+              </div>
+              <span className="feature-text">Visual productivity insights</span>
             </div>
-            <div className="benefit-row">
-              <Check size={16} className="text-emerald" />
-              <span>Interactive calendar with deadline highlights</span>
-            </div>
-            <div className="benefit-row">
-              <Check size={16} className="text-emerald" />
-              <span>Light and Dark mode support</span>
+
+            <div className="auth-feature-item">
+              <div className="feature-check-icon">
+                <Check size={18} className="text-emerald" />
+              </div>
+              <span className="feature-text">Organized daily workflow</span>
             </div>
           </div>
         </div>

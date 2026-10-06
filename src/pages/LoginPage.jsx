@@ -9,9 +9,6 @@ import {
   CheckCircle2,
   AlertCircle,
   ShieldCheck,
-  Zap,
-  Kanban,
-  CalendarDays,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useRouter } from '../context/RouterContext';
@@ -98,41 +95,32 @@ export default function LoginPage() {
         <div className="auth-hero-content">
           <span className="auth-tagline-badge">Campus Placement Assignment • Option 1</span>
           <h2 className="auth-hero-headline">
-            Streamline workflows, manage sprints, and deliver with velocity.
+            Get more done. Stay organized.
           </h2>
           <p className="auth-hero-subtext">
-            Experience an enterprise-grade productivity dashboard engineered with React, Kanban boards, interactive deadlines, and offline-first storage.
+            A modern, unified productivity workspace built to manage sprints, track deadlines, and organize your daily workflow.
           </p>
 
           <div className="auth-feature-list">
             <div className="auth-feature-item">
-              <div className="feature-icon-badge">
-                <Kanban size={18} />
+              <div className="feature-check-icon">
+                <CheckCircle2 size={18} className="text-emerald" />
               </div>
-              <div>
-                <strong className="feature-title">Fluid Kanban Boards</strong>
-                <p className="feature-desc">Drag and drop tasks across customizable sprint stages seamlessly.</p>
-              </div>
+              <span className="feature-text">Smart task tracking</span>
             </div>
 
             <div className="auth-feature-item">
-              <div className="feature-icon-badge">
-                <CalendarDays size={18} />
+              <div className="feature-check-icon">
+                <CheckCircle2 size={18} className="text-emerald" />
               </div>
-              <div>
-                <strong className="feature-title">Deadline Calendar</strong>
-                <p className="feature-desc">Monitor milestones, overdue tasks, and upcoming due dates visually.</p>
-              </div>
+              <span className="feature-text">Visual productivity insights</span>
             </div>
 
             <div className="auth-feature-item">
-              <div className="feature-icon-badge">
-                <Zap size={18} />
+              <div className="feature-check-icon">
+                <CheckCircle2 size={18} className="text-emerald" />
               </div>
-              <div>
-                <strong className="feature-title">Offline-First Local Storage</strong>
-                <p className="feature-desc">Immediate persistence with zero backend latency or database hurdles.</p>
-              </div>
+              <span className="feature-text">Organized daily workflow</span>
             </div>
           </div>
         </div>

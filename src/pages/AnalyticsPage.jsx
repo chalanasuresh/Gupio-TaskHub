@@ -77,6 +77,22 @@ export default function AnalyticsPage({ tasks = [], stats }) {
         </div>
       </div>
 
+      {/* Compact Insight Cards Strip */}
+      <div className="analytics-insights-strip" aria-label="Quick productivity insights">
+        <div className="insight-pill-card">
+          <span className="insight-pill-icon bg-emerald-subtle text-emerald">✓</span>
+          <span className="insight-pill-text"><strong>{weekly.totalThisWeek} tasks</strong> completed this week</span>
+        </div>
+        <div className="insight-pill-card">
+          <span className="insight-pill-icon bg-amber-subtle text-amber">⏰</span>
+          <span className="insight-pill-text"><strong>{next7Days.reduce((acc, d) => acc + d.count, 0)} deadlines</strong> approaching</span>
+        </div>
+        <div className="insight-pill-card">
+          <span className="insight-pill-icon bg-primary-subtle text-primary">📈</span>
+          <span className="insight-pill-text"><strong>{stats.completionRate}%</strong> completion rate</span>
+        </div>
+      </div>
+
       {/* Overview Cards Row */}
       <div className="analytics-overview-grid">
         <div className="analytics-stat-card">
@@ -181,13 +197,13 @@ export default function AnalyticsPage({ tasks = [], stats }) {
                       strokeDashoffset={offsetProgress}
                       transform="rotate(-90 80 80)"
                     />
-                    {/* Todo Ring (Slate) */}
+                    {/* Todo Ring (Amber) */}
                     <circle
                       cx="80"
                       cy="80"
                       r={radius}
                       fill="none"
-                      stroke="#94a3b8"
+                      stroke="#f59e0b"
                       strokeWidth="18"
                       strokeDasharray={`${strokeTodo} ${circumference}`}
                       strokeDashoffset={offsetTodo}
@@ -209,12 +225,12 @@ export default function AnalyticsPage({ tasks = [], stats }) {
                 <span className="legend-val">{completed} ({pCompleted.toFixed(0)}%)</span>
               </div>
               <div className="chart-legend-item">
-                <span className="legend-dot" style={{ backgroundColor: '#3b82f6' }} />
+                <span className="legend-dot" style={{ backgroundColor: '#2563eb' }} />
                 <span className="legend-name">In Progress</span>
                 <span className="legend-val">{inProgress} ({pInProgress.toFixed(0)}%)</span>
               </div>
               <div className="chart-legend-item">
-                <span className="legend-dot" style={{ backgroundColor: '#94a3b8' }} />
+                <span className="legend-dot" style={{ backgroundColor: '#f59e0b' }} />
                 <span className="legend-name">Todo</span>
                 <span className="legend-val">{todo} ({pTodo.toFixed(0)}%)</span>
               </div>
