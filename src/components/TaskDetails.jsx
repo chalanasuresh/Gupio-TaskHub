@@ -98,6 +98,31 @@ export default function TaskDetails({
             </div>
           </div>
 
+          {/* Visual Status Progress Tracker */}
+          <div className="status-progress-track-wrapper">
+            <div className="status-steps-bar">
+              {['Todo', 'In Progress', 'Completed'].map((st, idx) => {
+                const currentIdx = ['Todo', 'In Progress', 'Completed'].indexOf(task.status);
+                const isStepActive = idx <= currentIdx;
+                const isCurrent = task.status === st;
+
+                return (
+                  <div
+                    key={st}
+                    className={`status-step-node ${isStepActive ? 'active' : ''} ${isCurrent ? 'current' : ''}`}
+                    onClick={() => onStatusChange(task.id, st)}
+                    title={`Click to set status to ${st}`}
+                  >
+                    <div className="step-circle">
+                      {idx < currentIdx ? <CheckCircle2 size={13} /> : idx + 1}
+                    </div>
+                    <span className="step-name">{st}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
           {/* Metadata Grid */}
           <div className="details-meta-grid">
             {/* Status */}

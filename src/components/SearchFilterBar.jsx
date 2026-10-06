@@ -159,7 +159,12 @@ export default function SearchFilterBar({
               className="btn-clear-filters"
               onClick={onResetFilters}
             >
-              Reset Filters
+              Clear Filters ({
+                (search ? 1 : 0) +
+                (statusFilter !== 'All' ? 1 : 0) +
+                (priorityFilter !== 'All' ? 1 : 0) +
+                (sortBy !== 'newest' ? 1 : 0)
+              })
             </button>
           )}
         </div>

@@ -1,25 +1,33 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import {
-  loadTasksFromStorage,
-  saveTasksToStorage,
-  resetStorageWithSampleTasks,
+  loadTasksForUser,
+  saveTasksForUser,
+  resetUserTasksToSample,
 } from '../utils/storage';
 import {
   calculateTaskStatistics,
   validateTask,
 } from '../utils/taskUtils';
 
-export function useTasks() {
-  const [tasks, setTasks] = useState(() => loadTasksFromStorage());
+export function useTasks(userId = 'user-demo-1') {
+  const [tasks, setTasks] = useState(() => loadTasksForUser(userId));
 
-  // Keep localStorage synchronized whenever tasks state updates
+  const [prevUserId, setPrevUserId] = useState(userId);
+
+  if (userId !== prevUserId) {
+    setPrevUserId(userId);
+    setTasks(userId ? loadTasksForUser(userId) : []);
+  }
+
+  // Keep localStorage synchronized for this specific user
   useEffect(() => {
-    saveTasksToStorage(tasks);
-  }, [tasks]);
+    if (userId) {
+      saveTasksForUser(userId, tasks);
+    }
+  }, [tasks, userId]);
 
   /**
-   * Create a new task.
-   * Returns { success: boolean, task?: object, errors?: object }
+   * Create a new task for this user.
    */
   const createTask = useCallback((taskData) => {
     const validation = validateTask(taskData);
@@ -30,6 +38,7 @@ export function useTasks() {
     const now = new Date().toISOString();
     const newTask = {
       id: `task-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      userId: userId || 'user-demo-1',
       title: taskData.title.trim(),
       description: (taskData.description || '').trim(),
       status: taskData.status,
@@ -41,11 +50,10 @@ export function useTasks() {
 
     setTasks((prev) => [newTask, ...prev]);
     return { success: true, task: newTask };
-  }, []);
+  }, [userId]);
 
   /**
    * Update an existing task by ID.
-   * Returns { success: boolean, task?: object, errors?: object }
    */
   const updateTask = useCallback((id, updatedData) => {
     const validation = validateTask(updatedData);
@@ -97,7 +105,7 @@ export function useTasks() {
   }, []);
 
   /**
-   * Quick status changer (e.g. from card quick dropdown or checkbox).
+   * Quick status changer (e.g. from Kanban drag-and-drop, checkbox, or table).
    */
   const updateTaskStatus = useCallback((id, newStatus) => {
     const validStatuses = ['Todo', 'In Progress', 'Completed'];
@@ -118,12 +126,19 @@ export function useTasks() {
   }, []);
 
   /**
-   * Reset tasks to default sample set.
+   * Reset tasks to sample set for this user.
    */
   const resetTasks = useCallback(() => {
-    const fresh = resetStorageWithSampleTasks();
+    const fresh = resetUserTasksToSample(userId || 'user-demo-1');
     setTasks(fresh);
     return fresh;
+  }, [userId]);
+
+  /**
+   * Clear all tasks for this user.
+   */
+  const clearAllTasks = useCallback(() => {
+    setTasks([]);
   }, []);
 
   /**
@@ -139,5 +154,6 @@ export function useTasks() {
     deleteTask,
     updateTaskStatus,
     resetTasks,
+    clearAllTasks,
   };
 }

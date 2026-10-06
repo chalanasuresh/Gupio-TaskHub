@@ -2,70 +2,79 @@ import React from 'react';
 import {
   LayoutDashboard,
   CheckSquare,
-  Clock,
-  AlertTriangle,
-  CheckCircle2,
+  Columns3,
+  CalendarDays,
+  BarChart3,
+  User,
+  Settings,
   Database,
   RotateCcw,
   X,
-  Layers,
   Sparkles,
+  LogOut,
 } from 'lucide-react';
+import { useRouter } from '../context/RouterContext';
+import { useAuth } from '../context/AuthContext';
 
 export default function Sidebar({
   isOpen,
   onClose,
-  currentView,
-  onViewChange,
   stats,
   onResetDataClick,
 }) {
-  const navItems = [
+  const { currentPath, navigate } = useRouter();
+  const { currentUser, logout } = useAuth();
+
+  const primaryNavItems = [
     {
-      id: 'dashboard',
-      label: 'Dashboard Overview',
+      path: '/dashboard',
+      label: 'Dashboard',
       icon: LayoutDashboard,
-      count: null,
-      filter: null,
+      badge: null,
     },
     {
-      id: 'all',
-      label: 'All Tasks',
-      icon: Layers,
-      count: stats.total,
-      filter: 'All',
-    },
-    {
-      id: 'due-today',
-      label: 'Due Today',
-      icon: Clock,
-      count: null, // will filter to due today
-      filter: 'Due Today',
-      highlight: 'blue',
-    },
-    {
-      id: 'overdue',
-      label: 'Overdue Tasks',
-      icon: AlertTriangle,
-      count: stats.overdue,
-      filter: 'Overdue',
-      highlight: stats.overdue > 0 ? 'rose' : null,
-    },
-    {
-      id: 'in-progress',
-      label: 'In Progress',
+      path: '/tasks',
+      label: 'Tasks',
       icon: CheckSquare,
-      count: stats.inProgress,
-      filter: 'In Progress',
+      badge: stats?.total ?? null,
     },
     {
-      id: 'completed',
-      label: 'Completed',
-      icon: CheckCircle2,
-      count: stats.completed,
-      filter: 'Completed',
+      path: '/board',
+      label: 'Kanban Board',
+      icon: Columns3,
+      badge: null,
+    },
+    {
+      path: '/calendar',
+      label: 'Calendar',
+      icon: CalendarDays,
+      badge: null,
+    },
+    {
+      path: '/analytics',
+      label: 'Analytics',
+      icon: BarChart3,
+      badge: null,
     },
   ];
+
+  const secondaryNavItems = [
+    {
+      path: '/profile',
+      label: 'Profile',
+      icon: User,
+    },
+    {
+      path: '/settings',
+      label: 'Settings',
+      icon: Settings,
+    },
+  ];
+
+  function handleNav(path) {
+    navigate(path);
+    if (window.innerWidth < 1024) onClose();
+  }
 
   return (
     <>
@@ -106,65 +115,101 @@ export default function Sidebar({
           </div>
         </div>
 
-        {/* Navigation links */}
+        {/* Primary Navigation */}
         <div className="sidebar-nav-section">
-          <div className="sidebar-section-label">WORKSPACE VIEWS</div>
+          <div className="sidebar-section-label">WORKSPACE</div>
           <nav className="sidebar-nav-list">
-            {navItems.map((item) => {
+            {primaryNavItems.map((item) => {
               const Icon = item.icon;
-              const isActive = currentView === item.id;
+              const isActive =
+                currentPath === item.path ||
+                (item.path === '/dashboard' && (currentPath === '/' || currentPath === ''));
 
               return (
                 <button
-                  key={item.id}
+                  key={item.path}
                   type="button"
                   className={`sidebar-nav-item ${isActive ? 'active' : ''}`}
-                  onClick={() => {
-                    onViewChange(item.id, item.filter);
-                    if (window.innerWidth < 1024) onClose();
-                  }}
+                  onClick={() => handleNav(item.path)}
                 >
                   <Icon size={18} className="nav-item-icon" />
                   <span className="nav-item-label">{item.label}</span>
-                  {item.count !== null && item.count !== undefined && (
-                    <span
-                      className={`nav-item-badge ${
-                        item.highlight ? `badge-${item.highlight}` : ''
-                      }`}
-                    >
-                      {item.count}
-                    </span>
+                  {item.badge !== null && item.badge !== undefined && (
+                    <span className="nav-item-badge">{item.badge}</span>
                   )}
+                </button>
+              );
+            })}
+          </nav>
+
+          <div className="sidebar-section-label" style={{ marginTop: '16px' }}>
+            ACCOUNT & CONFIG
+          </div>
+          <nav className="sidebar-nav-list">
+            {secondaryNavItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = currentPath === item.path;
+
+              return (
+                <button
+                  key={item.path}
+                  type="button"
+                  className={`sidebar-nav-item ${isActive ? 'active' : ''}`}
+                  onClick={() => handleNav(item.path)}
+                >
+                  <Icon size={18} className="nav-item-icon" />
+                  <span className="nav-item-label">{item.label}</span>
                 </button>
               );
             })}
           </nav>
         </div>
 
-        {/* Sidebar Footer / System Status */}
+        {/* Sidebar Footer */}
         <div className="sidebar-footer">
+          {currentUser && (
+            <div className="sidebar-user-card">
+              <div
+                className="sidebar-user-avatar"
+                style={{ backgroundColor: currentUser.avatarColor || '#2563eb' }}
+              >
+                {currentUser.avatarInitials || 'U'}
+              </div>
+              <div className="sidebar-user-info">
+                <span className="sidebar-user-name">{currentUser.name}</span>
+                <span className="sidebar-user-email">{currentUser.email}</span>
+              </div>
+              <button
+                type="button"
+                className="sidebar-user-logout-btn"
+                onClick={() => {
+                  logout();
+                  navigate('/login');
+                }}
+                title="Log Out"
+                aria-label="Log Out"
+              >
+                <LogOut size={16} />
+              </button>
+            </div>
+          )}
+
           <div className="system-status-card">
             <div className="system-status-header">
               <Database size={15} className="text-emerald" />
-              <span className="system-status-title">Local Storage Layer</span>
+              <span className="system-status-title">LocalStorage Active</span>
             </div>
-            <p className="system-status-desc">
-              Data persists automatically to browser <code className="code-key">gupio_tasks</code>.
-            </p>
-            <button
-              type="button"
-              className="btn-sidebar-action"
-              onClick={onResetDataClick}
-              title="Restore initial sample tasks"
-            >
-              <RotateCcw size={14} />
-              <span>Reset Sample Tasks</span>
-            </button>
-          </div>
-
-          <div className="sidebar-credit">
-            <span>Gupio Frontend Placement</span>
-            <span className="sidebar-version">v1.0.0 • Local Only</span>
+            {onResetDataClick && (
+              <button
+                type="button"
+                className="btn-sidebar-action"
+                onClick={onResetDataClick}
+                title="Restore initial sample tasks"
+              >
+                <RotateCcw size={14} />
+                <span>Reset Sample Tasks</span>
+              </button>
+            )}
           </div>
         </div>
       </aside>

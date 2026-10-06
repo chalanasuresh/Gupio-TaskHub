@@ -1,26 +1,38 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import {
-  Layers,
-  CircleDot,
-  Clock,
-  CheckCircle2,
-  Flame,
-} from 'lucide-react';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
+import { RouterProvider, useRouter } from './context/RouterContext';
+import { NotificationProvider } from './context/NotificationContext';
+
 import { useTasks } from './hooks/useTasks';
 import { useToast } from './hooks/useToast';
 import { filterAndSortTasks } from './utils/taskUtils';
 
+import LoginPage from './pages/LoginPage';
+import SignupPage from './pages/SignupPage';
+import DashboardPage from './pages/DashboardPage';
+import TasksPage from './pages/TasksPage';
+import KanbanBoardPage from './pages/KanbanBoardPage';
+import CalendarViewPage from './pages/CalendarViewPage';
+import AnalyticsPage from './pages/AnalyticsPage';
+import ProfilePage from './pages/ProfilePage';
+import SettingsPage from './pages/SettingsPage';
+
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
-import StatCard from './components/StatCard';
-import SearchFilterBar from './components/SearchFilterBar';
-import TaskList from './components/TaskList';
 import TaskForm from './components/TaskForm';
 import TaskDetails from './components/TaskDetails';
 import ConfirmDialog from './components/ConfirmDialog';
+import ExportModal from './components/ExportModal';
 import Toast from './components/Toast';
 
-export default function App() {
+/**
+ * Inner workspace application shell rendered within Auth, Theme, Router, and Notification contexts.
+ */
+function WorkspaceShell() {
+  const { currentPath, navigate } = useRouter();
+  const { currentUser, isAuthenticated } = useAuth();
+
   const {
     tasks,
     stats,
@@ -29,7 +41,8 @@ export default function App() {
     deleteTask,
     updateTaskStatus,
     resetTasks,
-  } = useTasks();
+    clearAllTasks,
+  } = useTasks(currentUser?.id);
 
   const { toasts, showToast, removeToast } = useToast();
 
@@ -40,8 +53,7 @@ export default function App() {
   const [sortBy, setSortBy] = useState('newest');
   const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'table'
 
-  // Navigation state
-  const [currentNavView, setCurrentNavView] = useState('dashboard');
+  // Mobile navigation drawer state
   const [isSidebarOpenMobile, setIsSidebarOpenMobile] = useState(false);
 
   // Modal states
@@ -50,8 +62,11 @@ export default function App() {
   const [taskToView, setTaskToView] = useState(null);
   const [taskToDelete, setTaskToDelete] = useState(null);
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
+  const [isExportOpen, setIsExportOpen] = useState(false);
+  const [initialTaskStatus, setInitialTaskStatus] = useState('Todo');
+  const [initialTaskDate, setInitialTaskDate] = useState(null);
 
-  // Derive filtered and sorted tasks
+  // Compute filtered tasks
   const filteredTasks = useMemo(() => {
     return filterAndSortTasks(tasks, {
       search: searchQuery,
@@ -70,17 +85,7 @@ export default function App() {
     );
   }, [searchQuery, statusFilter, priorityFilter, sortBy]);
 
-  // Handle navigation change from sidebar
-  const handleNavChange = useCallback((navId, filterValue) => {
-    setCurrentNavView(navId);
-    if (filterValue !== null) {
-      setStatusFilter(filterValue);
-    } else {
-      setStatusFilter('All');
-    }
-  }, []);
-
-  // Reset all search and filter controls
+  // Reset filters
   const handleResetFilters = useCallback(() => {
     setSearchQuery('');
     setStatusFilter('All');
@@ -88,7 +93,7 @@ export default function App() {
     setSortBy('newest');
   }, []);
 
-  // Form submission (handles both Create and Edit)
+  // Form submission (Create & Edit)
   const handleFormSubmit = useCallback(
     (formData) => {
       if (taskToEdit) {
@@ -119,14 +124,13 @@ export default function App() {
     [taskToEdit, createTask, updateTask, showToast]
   );
 
-  // Delete task after confirmation
+  // Delete task with confirmation
   const handleConfirmDelete = useCallback(() => {
     if (!taskToDelete) return;
     const taskTitle = taskToDelete.title;
     const result = deleteTask(taskToDelete.id);
     if (result.success) {
       showToast(`Task "${taskTitle}" deleted.`, 'success');
-      // If the currently viewed task was deleted, close view modal
       if (taskToView && taskToView.id === taskToDelete.id) {
         setTaskToView(null);
       }
@@ -136,13 +140,12 @@ export default function App() {
     setTaskToDelete(null);
   }, [taskToDelete, deleteTask, taskToView, showToast]);
 
-  // Quick status toggle
+  // Quick status toggle (Kanban drag-and-drop, card click, table switcher)
   const handleStatusChange = useCallback(
     (id, newStatus) => {
       const ok = updateTaskStatus(id, newStatus);
       if (ok) {
-        showToast(`Status updated to "${newStatus}".`, 'info', 2500);
-        // If currently viewing, update the local view object
+        showToast(`Moved to "${newStatus}".`, 'info', 2200);
         if (taskToView && taskToView.id === id) {
           setTaskToView((prev) => ({ ...prev, status: newStatus }));
         }
@@ -151,128 +154,135 @@ export default function App() {
     [updateTaskStatus, taskToView, showToast]
   );
 
-  // Reset to initial sample tasks
-  const handleConfirmReset = useCallback(() => {
-    resetTasks();
-    setIsResetConfirmOpen(false);
-    handleResetFilters();
-    showToast('Sample tasks restored successfully.', 'success');
-  }, [resetTasks, handleResetFilters, showToast]);
-
-  // Open modal helpers
-  const handleOpenCreateModal = useCallback(() => {
+  // Open Create Modal with optional initial status or due date
+  const handleOpenCreateModal = useCallback((status = 'Todo', dueDate = null) => {
     setTaskToEdit(null);
+    setInitialTaskStatus(status);
+    setInitialTaskDate(dueDate);
     setIsFormOpen(true);
   }, []);
 
+  // Open Edit Modal
   const handleOpenEditModal = useCallback((task) => {
     setTaskToEdit(task);
     setIsFormOpen(true);
   }, []);
 
-  // Filter click from stat cards
-  const handleStatCardClick = useCallback((targetFilter) => {
-    if (statusFilter === targetFilter) {
-      setStatusFilter('All');
-    } else {
-      setStatusFilter(targetFilter);
+  // Reset to initial sample tasks
+  const handleConfirmReset = useCallback(() => {
+    resetTasks();
+    setIsResetConfirmOpen(false);
+    handleResetFilters();
+    showToast('Sample workplace tasks restored successfully.', 'success');
+  }, [resetTasks, handleResetFilters, showToast]);
+
+  // Clear all tasks
+  const handleClearAllTasks = useCallback(() => {
+    clearAllTasks();
+    handleResetFilters();
+    showToast('All tasks have been purged from your account.', 'warning');
+  }, [clearAllTasks, handleResetFilters, showToast]);
+
+  // Page title mapping
+  const pageMeta = useMemo(() => {
+    switch (currentPath) {
+      case '/tasks':
+        return {
+          title: 'Task Backlog',
+          subtitle: 'Comprehensive view of all your team deliverables and assignments.',
+        };
+      case '/board':
+        return {
+          title: 'Kanban Sprint Board',
+          subtitle: 'Interactive drag-and-drop progression across sprint columns.',
+        };
+      case '/calendar':
+        return {
+          title: 'Deadlines Calendar',
+          subtitle: 'Visualize milestone dates, deadlines, and scheduled priorities.',
+        };
+      case '/analytics':
+        return {
+          title: 'Performance Analytics',
+          subtitle: 'Velocity metrics, completion ratios, and workload distributions.',
+        };
+      case '/profile':
+        return {
+          title: 'Account Profile',
+          subtitle: 'Manage your credentials, display settings, and avatar tone.',
+        };
+      case '/settings':
+        return {
+          title: 'Workspace Settings',
+          subtitle: 'Customize appearance, notification alerts, and data exports.',
+        };
+      case '/dashboard':
+      case '/':
+      default:
+        return {
+          title: 'Dashboard Overview',
+          subtitle: 'Track deadlines, balance priorities, and streamline daily productivity.',
+        };
     }
-  }, [statusFilter]);
+  }, [currentPath]);
 
-  // Compute page title and subtitle
-  const pageTitle = useMemo(() => {
-    if (statusFilter === 'Todo') return 'Todo Tasks';
-    if (statusFilter === 'In Progress') return 'In Progress Tasks';
-    if (statusFilter === 'Completed') return 'Completed Tasks';
-    if (statusFilter === 'Overdue') return 'Overdue Tasks';
-    if (statusFilter === 'Due Today') return 'Tasks Due Today';
-    if (priorityFilter === 'High') return 'High Priority Tasks';
-    return 'Task Management Dashboard';
-  }, [statusFilter, priorityFilter]);
+  // 1. If user is on authentication routes
+  if (!isAuthenticated || currentPath === '/login') {
+    return (
+      <>
+        <Toast toasts={toasts} onDismiss={removeToast} />
+        <LoginPage />
+      </>
+    );
+  }
 
+  if (currentPath === '/signup') {
+    return (
+      <>
+        <Toast toasts={toasts} onDismiss={removeToast} />
+        <SignupPage />
+      </>
+    );
+  }
+
+  // 2. Render authenticated application shell
   return (
     <div className="app-shell">
-      {/* Toast Notification Layer */}
       <Toast toasts={toasts} onDismiss={removeToast} />
 
       {/* Dark Sidebar Navigation */}
       <Sidebar
         isOpen={isSidebarOpenMobile}
         onClose={() => setIsSidebarOpenMobile(false)}
-        currentView={currentNavView}
-        onViewChange={handleNavChange}
         stats={stats}
         onResetDataClick={() => setIsResetConfirmOpen(true)}
       />
 
-      {/* Main Content Area */}
+      {/* Main Workspace Area */}
       <div className="app-main-layout">
         <Header
-          pageTitle={pageTitle}
-          pageSubtitle="Track deadlines, balance priorities, and streamline daily productivity."
+          pageTitle={pageMeta.title}
+          pageSubtitle={pageMeta.subtitle}
           onOpenSidebar={() => setIsSidebarOpenMobile(true)}
-          onOpenCreateTask={handleOpenCreateModal}
+          onOpenCreateTask={() => handleOpenCreateModal('Todo')}
+          onOpenExport={() => setIsExportOpen(true)}
+          onViewTask={(taskId) => {
+            const found = tasks.find((t) => t.id === taskId);
+            if (found) setTaskToView(found);
+          }}
+          globalSearch={searchQuery}
+          onGlobalSearchChange={setSearchQuery}
+          showSearch={currentPath === '/dashboard' || currentPath === '/' || currentPath === '/tasks'}
         />
 
         <main className="app-content-body">
-          {/* Section 1: Dynamic Statistics Cards */}
-          <section className="stats-cards-grid" aria-label="Task metrics">
-            <StatCard
-              label="Total Tasks"
-              value={stats.total}
-              icon={Layers}
-              variant="default"
-              subtext="Overall backlog"
-              isActive={statusFilter === 'All' && priorityFilter === 'All'}
-              onClick={() => {
-                setStatusFilter('All');
-                setPriorityFilter('All');
-              }}
-            />
-            <StatCard
-              label="Todo"
-              value={stats.todo}
-              icon={CircleDot}
-              variant="todo"
-              subtext="Pending start"
-              isActive={statusFilter === 'Todo'}
-              onClick={() => handleStatCardClick('Todo')}
-            />
-            <StatCard
-              label="In Progress"
-              value={stats.inProgress}
-              icon={Clock}
-              variant="progress"
-              subtext="Actively worked on"
-              isActive={statusFilter === 'In Progress'}
-              onClick={() => handleStatCardClick('In Progress')}
-            />
-            <StatCard
-              label="Completed"
-              value={stats.completed}
-              icon={CheckCircle2}
-              variant="completed"
-              subtext={`${stats.completionRate}% completion rate`}
-              isActive={statusFilter === 'Completed'}
-              onClick={() => handleStatCardClick('Completed')}
-            />
-            <StatCard
-              label="High Priority"
-              value={stats.highPriority}
-              icon={Flame}
-              variant="high"
-              subtext="Urgent focus items"
-              isActive={priorityFilter === 'High'}
-              onClick={() => {
-                setPriorityFilter(priorityFilter === 'High' ? 'All' : 'High');
-              }}
-            />
-          </section>
-
-          {/* Section 2: Search, Filters, Sorting & View Toggle */}
-          <section className="controls-section" aria-label="Task controls">
-            <SearchFilterBar
-              search={searchQuery}
+          {/* Route View Switching */}
+          {(currentPath === '/dashboard' || currentPath === '/') && (
+            <DashboardPage
+              tasks={tasks}
+              stats={stats}
+              filteredTasks={filteredTasks}
+              searchQuery={searchQuery}
               onSearchChange={setSearchQuery}
               statusFilter={statusFilter}
               onStatusFilterChange={setStatusFilter}
@@ -282,43 +292,94 @@ export default function App() {
               onSortChange={setSortBy}
               viewMode={viewMode}
               onViewModeChange={setViewMode}
-              totalResults={filteredTasks.length}
               onResetFilters={handleResetFilters}
               isFiltered={isFiltered}
+              onViewTask={(task) => setTaskToView(task)}
+              onEditTask={handleOpenEditModal}
+              onDeleteTask={(task) => setTaskToDelete(task)}
+              onStatusChange={handleStatusChange}
+              onCreateTask={() => handleOpenCreateModal('Todo')}
+              onResetTasks={() => setIsResetConfirmOpen(true)}
+              onNavigate={navigate}
             />
-          </section>
+          )}
 
-          {/* Section 3: Task Grid / Table / Empty States */}
-          <section className="task-content-section" aria-label="Task listing">
-            <TaskList
-              tasks={filteredTasks}
-              totalOriginalTasks={tasks.length}
+          {currentPath === '/tasks' && (
+            <TasksPage
+              tasks={tasks}
+              filteredTasks={filteredTasks}
               searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
               statusFilter={statusFilter}
+              onStatusFilterChange={setStatusFilter}
               priorityFilter={priorityFilter}
+              onPriorityFilterChange={setPriorityFilter}
+              sortBy={sortBy}
+              onSortChange={setSortBy}
               viewMode={viewMode}
+              onViewModeChange={setViewMode}
+              onResetFilters={handleResetFilters}
+              isFiltered={isFiltered}
+              onViewTask={(task) => setTaskToView(task)}
+              onEditTask={handleOpenEditModal}
+              onDeleteTask={(task) => setTaskToDelete(task)}
+              onStatusChange={handleStatusChange}
+              onCreateTask={() => handleOpenCreateModal('Todo')}
+              onResetTasks={() => setIsResetConfirmOpen(true)}
+            />
+          )}
+
+          {currentPath === '/board' && (
+            <KanbanBoardPage
+              tasks={tasks}
+              onStatusChange={handleStatusChange}
               onView={(task) => setTaskToView(task)}
               onEdit={handleOpenEditModal}
               onDelete={(task) => setTaskToDelete(task)}
-              onStatusChange={handleStatusChange}
-              onCreateTask={handleOpenCreateModal}
-              onClearFilters={handleResetFilters}
-              onResetTasks={() => setIsResetConfirmOpen(true)}
+              onCreateTask={(colStatus) => handleOpenCreateModal(colStatus)}
             />
-          </section>
+          )}
+
+          {currentPath === '/calendar' && (
+            <CalendarViewPage
+              tasks={tasks}
+              onViewTask={(task) => setTaskToView(task)}
+              onCreateTaskWithDate={(dateStr) => handleOpenCreateModal('Todo', dateStr)}
+            />
+          )}
+
+          {currentPath === '/analytics' && (
+            <AnalyticsPage tasks={tasks} stats={stats} />
+          )}
+
+          {currentPath === '/profile' && (
+            <ProfilePage stats={stats} onShowToast={showToast} />
+          )}
+
+          {currentPath === '/settings' && (
+            <SettingsPage
+              tasks={tasks}
+              onResetTasks={handleConfirmReset}
+              onClearAllTasks={handleClearAllTasks}
+              onShowToast={showToast}
+            />
+          )}
         </main>
       </div>
 
       {/* Task Create / Edit Modal */}
       {isFormOpen && (
         <TaskForm
-          key={taskToEdit ? taskToEdit.id : 'create-new'}
+          key={taskToEdit ? taskToEdit.id : `create-${initialTaskStatus}-${initialTaskDate || 'none'}`}
           isOpen={isFormOpen}
-          taskToEdit={taskToEdit}
+          taskToEdit={
+            taskToEdit || (initialTaskStatus || initialTaskDate ? { status: initialTaskStatus, dueDate: initialTaskDate } : null)
+          }
           onSubmit={handleFormSubmit}
           onClose={() => {
             setIsFormOpen(false);
             setTaskToEdit(null);
+            setInitialTaskDate(null);
           }}
         />
       )}
@@ -352,17 +413,42 @@ export default function App() {
         onCancel={() => setTaskToDelete(null)}
       />
 
-      {/* Reset Sample Tasks Confirmation Dialog */}
+      {/* Reset Confirmation Dialog */}
       <ConfirmDialog
         isOpen={isResetConfirmOpen}
         title="Reset Sample Workplace Tasks"
-        message="This will replace any current tasks with the default 8 realistic workplace sample tasks. Are you sure you want to continue?"
+        message="This will overwrite your tasks with default workplace demo fixtures. Continue?"
         confirmLabel="Reset to Sample Data"
-        cancelLabel="Keep Current Data"
+        cancelLabel="Cancel"
         isDestructive={false}
         onConfirm={handleConfirmReset}
         onCancel={() => setIsResetConfirmOpen(false)}
       />
+
+      {/* Export Data Modal */}
+      <ExportModal
+        isOpen={isExportOpen}
+        onClose={() => setIsExportOpen(false)}
+        tasks={tasks}
+        onShowToast={showToast}
+      />
     </div>
+  );
+}
+
+/**
+ * Top-Level App with all providers configured.
+ */
+export default function App() {
+  return (
+    <AuthProvider>
+      <ThemeProvider>
+        <RouterProvider>
+          <NotificationProvider>
+            <WorkspaceShell />
+          </NotificationProvider>
+        </RouterProvider>
+      </ThemeProvider>
+    </AuthProvider>
   );
 }
